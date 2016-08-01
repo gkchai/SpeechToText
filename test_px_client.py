@@ -5,20 +5,60 @@ from grpc.beta import implementations
 import time
 import argparse 
 import random
+import sys
+import wave
 
 _TIMEOUT_SECONDS_STREAM = 1000 	# timeout for streaming must be for entire stream 
 
+
 def chunks_from_file(filename, chunkSize=1024):
-	f = open(filename, 'rb')	
-	while True:
-		chunk = f.read(chunkSize)
-		if chunk:
-			# print len(chunk)
-			yield px_pb2.StreamChunk(content=(chunk))
-		else:
+
+	if '.raw' in filename:
+		f = open(filename, 'rb')	
+		while True:
+			chunk = f.read(chunkSize)
+			if chunk:
+				# print len(chunk)
+				yield px_pb2.StreamChunk(content=(chunk))
+			else:
+				raise StopIteration
+			time.sleep(0.1)
+
+	elif 'stdin' in filename:
+		while True:
+			chunk = sys.stdin.read(chunkSize//2)
+			if chunk:
+				# print len(chunk)
+				yield px_pb2.StreamChunk(content=(chunk))
+			else:
+				raise StopIteration
+	
+	elif '.wav' in filename:	
+		audio = wave.open(filename)
+        if audio.getsampwidth() != 2:
+            print "%s: wrong sample width (must be 16-bit)" % filename
+            raise StopIteration
+        if audio.getframerate() != 8000 and audio.getframerate() != 16000:
+			print "%s: unsupported sampling frequency (must be either 8 or 16 khz)" % filename
 			raise StopIteration
-		# time.sleep(random.uniform(0.01, 0.3))
-		time.sleep(0.1)
+        if audio.getnchannels() != 1:
+			print "%s: must be single channel (mono)" % filename
+			raise StopIteration		
+
+        while True:
+			chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes
+			if chunk:
+				# print len(chunk)
+				yield px_pb2.StreamChunk(content=(chunk))
+			else:
+				raise StopIteration
+			time.sleep(0.1)
+
+	else:
+		raise StopIteration
+
+
+
 
 def clientChunkStream(service, filename, chunkSize=1024):	
 	""" chunk stream of bytes """
@@ -29,6 +69,7 @@ def clientChunkStream(service, filename, chunkSize=1024):
 
 def createService():
 	channel = implementations.insecure_channel('localhost', 8888)
+	# channel = implementations.insecure_channel('10.37.163.202', 8888)
 	return px_pb2.beta_create_Listener_stub(channel)	
 	
 
@@ -40,4 +81,4 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	service = createService()	
-	clientChunkStream(service, args.filename, 3200)
+	clientChunkStream(service, args.filename, 3072)

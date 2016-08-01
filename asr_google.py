@@ -51,9 +51,8 @@ def request_stream(chunkIterator):
 
 	for data in chunkIterator:
 		# Subsequent requests can all just have the content
-		time.sleep(random.uniform(0.01, 0.2))
+		# time.sleep(random.uniform(0.01, 0.2))
 		yield cloud_speech.StreamingRecognizeRequest(audio_content=data)
-
 
 
 def stream(chunkIterator):	
@@ -66,11 +65,10 @@ def stream(chunkIterator):
 				raise RuntimeError('Server error: ' + response.error.message)
 
 			if len(response.results) > 0:
-				yield response.results[0].alternatives[0]
+				# print response.results[0].alternatives[0].transcript
+				yield response.results[0].alternatives[0].transcript
 	except:
-
 		yield '<#>'
-
 		# print len(response.results), time.time()
 
 if __name__ == "__main__":
@@ -78,17 +76,41 @@ if __name__ == "__main__":
 	parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
 	args = parser.parse_args()
 
-	def generate_chunks(chunkSize=3200):
-		f = open(args.filename, 'rb')	
-		while True:
-			chunk = f.read(chunkSize)
-			if chunk:
-				print len(chunk)
-				yield chunk
-			else:
-				raise StopIteration
-			time.sleep(0.1)
+	def generate_chunks(filename, chunkSize=3072):
+	    if '.raw' in filename:
+	        f = open(filename, 'rb')    
+	        while True:
+	            chunk = f.read(chunkSize)
+	            if chunk:
+	                print len(chunk)
+	                yield chunk
+	            else:
+	                raise StopIteration
+	            time.sleep(0.1)
+	    
+	    elif '.wav' in filename:    
+	        audio = wave.open(filename)
+	        if audio.getsampwidth() != 2:
+	            print "%s: wrong sample width (must be 16-bit)" % filename
+	            raise StopIteration
+	        if audio.getframerate() != 8000 and audio.getframerate() != 16000:
+	            print "%s: unsupported sampling frequency (must be either 8 or 16 khz)" % filename
+	            raise StopIteration
+	        if audio.getnchannels() != 1:
+	            print "%s: must be single channel (mono)" % filename
+	            raise StopIteration     
 
-	responses = stream(generate_chunks())
+	        while True:
+	            chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes
+	            if chunk:
+	                print len(chunk)
+	                yield chunk
+	            else:
+	                raise StopIteration
+	            time.sleep(0.1)
+	    else:
+	        raise StopIteration
+
+	responses = stream(generate_chunks(args.filename, 3072))
 	for response in responses:
-		print response
+		print '', #response

@@ -3,7 +3,7 @@
 import px_pb2
 import time
 import random
-import asr_google
+import asr_google, asr_hound
 import threading
 import json
 import itertools
@@ -99,7 +99,7 @@ class Listener(px_pb2.BetaListenerServicer):
 			if asr == 'ibm':
 				thread.start_new_thread(self._mergeStream, (asr_google.stream(iter(all_queues[ix].get, 'EOS')), responseQueue, asr))
 			if asr == 'hound':
-				thread.start_new_thread(self._mergeStream, (asr_google.stream(iter(all_queues[ix].get, 'EOS')), responseQueue, asr))
+				thread.start_new_thread(self._mergeStream, (asr_hound.stream(iter(all_queues[ix].get, 'EOS')), responseQueue, asr))
 
 		self.endcount = 0
 		for item_json in IterableQueue(responseQueue, self.predicate):								
@@ -110,6 +110,8 @@ class Listener(px_pb2.BetaListenerServicer):
 					self.write(self.db)
 
 				yield px_pb2.StreamChunk(content = item_str)
+			
+
 
 def serve():
 	server = px_pb2.beta_create_Listener_server(Listener())
