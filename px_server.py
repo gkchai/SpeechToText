@@ -12,7 +12,8 @@ import Queue
 import uuid
 
 # asrs = ["google", "ibm", "hound"]
-asrs = ["google", "ibm", "hound"]
+# asrs = ["google", "ibm", "hound"]
+asrs = ["google", "hound"]
 
 class IterableQueue(): 
 
@@ -110,7 +111,7 @@ class Listener(px_pb2.BetaListenerServicer):
 					self.write(self.db)
 
 				yield px_pb2.StreamChunk(content = item_str)
-			
+
 
 
 def serve():

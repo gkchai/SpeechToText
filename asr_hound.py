@@ -16,6 +16,7 @@ class ResponseListener(houndify.HoundListener):
     def onFinalResponse(self, response):
         # self.responseQueue.put(response)
         self.responseQueue.put('EOS')
+        print "Final response: " + response
     def onTranslatedResponse(self, response):
         print "Translated response: " + response
     def onError(self, err):

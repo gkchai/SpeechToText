@@ -59,14 +59,19 @@ def stream(chunkIterator):
 	service = cloud_speech.beta_create_Speech_stub(
 		make_channel('speech.googleapis.com', 443))
 	responses = service.StreamingRecognize(request_stream(chunkIterator), DEADLINE_SECS)
+	is_final = False
 	try:
 		for response in responses:
 			if response.error.code != code_pb2.OK:
 				raise RuntimeError('Server error: ' + response.error.message)
 
 			if len(response.results) > 0:
-				# print response.results[0].alternatives[0].transcript
+				if response.results[0].alternatives[0].confidence:
+					is_final = True
 				yield response.results[0].alternatives[0].transcript
+
+			if is_final:
+				break
 	except:
 		yield '<#>'
 		# print len(response.results), time.time()
