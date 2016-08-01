@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package proxyASR;
+
+// The Listener service definition.
+service Listener {
+  rpc DoChunkStream (stream StreamChunk) returns (stream StreamChunk) {}
+}
+
+message StreamChunk {
+  bytes content = 1;
+}
