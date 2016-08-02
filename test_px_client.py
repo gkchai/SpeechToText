@@ -53,7 +53,6 @@ def chunks_from_file(filename, chunkSize=1024):
 			else:
 				raise StopIteration
 			time.sleep(0.1)
-
 	else:
 		raise StopIteration
 
@@ -68,8 +67,9 @@ def clientChunkStream(service, filename, chunkSize=1024):
 		print '\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n'
 
 def createService():
-	channel = implementations.insecure_channel('localhost', 8888)
-	# channel = implementations.insecure_channel('10.37.163.202', 8888)
+	# channel = implementations.insecure_channel('localhost', 8080)
+	channel = implementations.insecure_channel('10.37.163.202', 8080)
+	# channel = implementations.insecure_channel('52.91.17.237', 80) # aws host
 	return px_pb2.beta_create_Listener_stub(channel)	
 	
 

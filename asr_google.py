@@ -73,7 +73,7 @@ def stream(chunkIterator):
 			if is_final:
 				break
 	except:
-		yield '<#>'
+		yield ''
 		# print len(response.results), time.time()
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Proxy ASR server implementation in GRPC"""
 
 import px_pb2
@@ -116,7 +117,7 @@ class Listener(px_pb2.BetaListenerServicer):
 
 def serve():
 	server = px_pb2.beta_create_Listener_server(Listener())
-	server.add_insecure_port('[::]:8888')
+	server.add_insecure_port('[::]:8080')
 	server.start()
 	try:
 		while True:
