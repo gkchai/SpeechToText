@@ -11,10 +11,9 @@ import itertools
 import thread
 import Queue
 import uuid
+import argparse
 
-# asrs = ["google", "ibm", "hound"]
-# asrs = ["google", "ibm", "hound"]
-asrs = ["google", "hound"]
+_SUPPORTED_ASR = ["google", "hound", "ibm"]
 
 class IterableQueue(): 
 
@@ -43,6 +42,8 @@ class Listener(px_pb2.BetaListenerServicer):
 
 	def __init__(self):
 		""" put initializaiton code e.g. db access """
+		self.config = {}
+		self.config_set = False
 		with open('log/log.json') as f:
 			self.db = json.load(f)
 
@@ -62,30 +63,48 @@ class Listener(px_pb2.BetaListenerServicer):
 
 	def _mergeStream(self, response_iterator, responseQueue, asr):
 		for response in response_iterator:
-			str_response = str(response)			
+			str_response = response			
 			toClient_json = {"asr": asr, "str": str_response}
 			responseQueue.put(toClient_json)
 		responseQueue.put('DONE')
 
-	def predicate(self, x):
+	def _predicate(self, x):
 		if x == 'DONE':
 			self.endcount += 1
-			if self.endcount == len(asrs):
+			if self.endcount == len(self.asrs):
 				return False
 			else:
 				return True
 		else:
 			return True
 
+	def DoConfig(self, request, context):
+ 
+		self.asrs = request.asr
+		if set(self.asrs) > set(_SUPPORTED_ASR):
+			raise Exception("ASR not supported")
+
+		self.config['encoding'] = request.encoding
+		self.config['rate'] = request.rate
+		self.config['language'] = request.language
+		self.config['max_alternatives'] = request.max_alternatives
+		self.config['profanity_filter'] = request.profanity_filter
+		self.config['interim_results'] = request.interim_results
+		self.config_set = True
+		return px_pb2.ConfigResult(status=True)
+
 
 	def DoChunkStream(self, request_iterator, context):
+
+		if not self.config_set:
+			raise Exception("Configuration not set")
 
 		asr_id = str(uuid.uuid1())
 		print "Request-id: %s"%asr_id
 		self.db[asr_id] = {}
 		
 		all_queues = []
-		for _ in range(len(asrs)):
+		for _ in range(len(self.asrs)):
 			all_queues.append(Queue.Queue()) 
 
 		# log queue
@@ -95,16 +114,19 @@ class Listener(px_pb2.BetaListenerServicer):
 		thread.start_new_thread(LogStream, (iter(all_queues[-1].get, 'EOS'), asr_id))
 		
 		responseQueue = Queue.Queue()
-		for ix, asr in enumerate(asrs):
+		for ix, asr in enumerate(self.asrs):
 			if asr == 'google':
-				thread.start_new_thread(self._mergeStream, (asr_google.stream(iter(all_queues[ix].get, 'EOS')), responseQueue, asr))
+				thread.start_new_thread(self._mergeStream, 
+					(asr_google.stream(iter(all_queues[ix].get, 'EOS'), self.config), responseQueue, asr))
 			if asr == 'ibm':
-				thread.start_new_thread(self._mergeStream, (asr_google.stream(iter(all_queues[ix].get, 'EOS')), responseQueue, asr))
+				thread.start_new_thread(self._mergeStream, 
+					(asr_google.stream(iter(all_queues[ix].get, 'EOS'), self.config), responseQueue, asr))
 			if asr == 'hound':
-				thread.start_new_thread(self._mergeStream, (asr_hound.stream(iter(all_queues[ix].get, 'EOS')), responseQueue, asr))
+				thread.start_new_thread(self._mergeStream, 
+					(asr_hound.stream(iter(all_queues[ix].get, 'EOS'), self.config), responseQueue, asr))
 
 		self.endcount = 0
-		for item_json in IterableQueue(responseQueue, self.predicate):								
+		for item_json in IterableQueue(responseQueue, self._predicate):								
 			if item_json != 'DONE':
 				item_str = json.dumps(item_json)
 				if "is_final" in item_str:
@@ -114,10 +136,9 @@ class Listener(px_pb2.BetaListenerServicer):
 				yield px_pb2.StreamChunk(content = item_str)
 
 
-
-def serve():
+def serve(port):
 	server = px_pb2.beta_create_Listener_server(Listener())
-	server.add_insecure_port('[::]:8080')
+	server.add_insecure_port('[::]:%d'%port)
 	server.start()
 	try:
 		while True:
@@ -126,4 +147,8 @@ def serve():
 		server.stop(0)
 
 if __name__ == '__main__':
-	serve()
+	
+	parser = argparse.ArgumentParser(description='Proxy ASR service')
+	parser.add_argument('-p', action='store', dest='port', type=int, default=8080, help='port')
+	args = parser.parse_args()
+	serve(args.port)

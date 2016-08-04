@@ -32,15 +32,19 @@ def credentials():
     creds['CLIENT_KEY'] = str(creds_json["ClientKey"])    
     return creds
 
-def request_stream(client, chunkIterator):
-    finished = False
-    for data in chunkIterator:
-        if not finished:
-            finished = client.fill(data)
-    client.finish()
+# TODO: Move everything under a single class
+def request_stream(client, chunkIterator, responseQueue):
+    try:
+        finished = False
+        for data in chunkIterator:
+            if not finished:
+                finished = client.fill(data)
+        client.finish()
+    except:
+        responseQueue.put('EOS')
+        return 
 
-
-def stream(chunkIterator):
+def stream(chunkIterator, config):
     creds = credentials()
     client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'], "asr_user")
     client.setSampleRate(16000)
@@ -48,7 +52,7 @@ def stream(chunkIterator):
     
     responseQueue = Queue.Queue()
     client.start(ResponseListener(responseQueue))
-    thread.start_new_thread(request_stream, (client, chunkIterator))
+    thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
 
     responseIterator =  iter(responseQueue.get, 'EOS')
     for response in responseIterator:

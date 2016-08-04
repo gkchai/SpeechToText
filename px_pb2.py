@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='px.proto',
   package='proxyASR',
   syntax='proto3',
-  serialized_pb=_b('\n\x08px.proto\x12\x08proxyASR\"\x1e\n\x0bStreamChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\x32O\n\x08Listener\x12\x43\n\rDoChunkStream\x12\x15.proxyASR.StreamChunk\x1a\x15.proxyASR.StreamChunk\"\x00(\x01\x30\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x08px.proto\x12\x08proxyASR\"\x1e\n\x0bStreamChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\"\x1e\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xae\x01\n\x0c\x43onfigSpeech\x12\x0b\n\x03\x61sr\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x0c\n\x04rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\"W\n\x0eResponseStream\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\x8d\x01\n\x08Listener\x12\x43\n\rDoChunkStream\x12\x15.proxyASR.StreamChunk\x1a\x15.proxyASR.StreamChunk\"\x00(\x01\x30\x01\x12<\n\x08\x44oConfig\x12\x16.proxyASR.ConfigSpeech\x1a\x16.proxyASR.ConfigResult\"\x00\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -56,7 +56,173 @@ _STREAMCHUNK = _descriptor.Descriptor(
   serialized_end=52,
 )
 
+
+_CONFIGRESULT = _descriptor.Descriptor(
+  name='ConfigResult',
+  full_name='proxyASR.ConfigResult',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='status', full_name='proxyASR.ConfigResult.status', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=54,
+  serialized_end=84,
+)
+
+
+_CONFIGSPEECH = _descriptor.Descriptor(
+  name='ConfigSpeech',
+  full_name='proxyASR.ConfigSpeech',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='asr', full_name='proxyASR.ConfigSpeech.asr', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='encoding', full_name='proxyASR.ConfigSpeech.encoding', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='rate', full_name='proxyASR.ConfigSpeech.rate', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='language', full_name='proxyASR.ConfigSpeech.language', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='max_alternatives', full_name='proxyASR.ConfigSpeech.max_alternatives', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='profanity_filter', full_name='proxyASR.ConfigSpeech.profanity_filter', index=5,
+      number=6, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='interim_results', full_name='proxyASR.ConfigSpeech.interim_results', index=6,
+      number=7, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='continuous', full_name='proxyASR.ConfigSpeech.continuous', index=7,
+      number=8, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=87,
+  serialized_end=261,
+)
+
+
+_RESPONSESTREAM = _descriptor.Descriptor(
+  name='ResponseStream',
+  full_name='proxyASR.ResponseStream',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='asr', full_name='proxyASR.ResponseStream.asr', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='transcript', full_name='proxyASR.ResponseStream.transcript', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='is_final', full_name='proxyASR.ResponseStream.is_final', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='confidence', full_name='proxyASR.ResponseStream.confidence', index=3,
+      number=4, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=263,
+  serialized_end=350,
+)
+
 DESCRIPTOR.message_types_by_name['StreamChunk'] = _STREAMCHUNK
+DESCRIPTOR.message_types_by_name['ConfigResult'] = _CONFIGRESULT
+DESCRIPTOR.message_types_by_name['ConfigSpeech'] = _CONFIGSPEECH
+DESCRIPTOR.message_types_by_name['ResponseStream'] = _RESPONSESTREAM
 
 StreamChunk = _reflection.GeneratedProtocolMessageType('StreamChunk', (_message.Message,), dict(
   DESCRIPTOR = _STREAMCHUNK,
@@ -64,6 +230,27 @@ StreamChunk = _reflection.GeneratedProtocolMessageType('StreamChunk', (_message.
   # @@protoc_insertion_point(class_scope:proxyASR.StreamChunk)
   ))
 _sym_db.RegisterMessage(StreamChunk)
+
+ConfigResult = _reflection.GeneratedProtocolMessageType('ConfigResult', (_message.Message,), dict(
+  DESCRIPTOR = _CONFIGRESULT,
+  __module__ = 'px_pb2'
+  # @@protoc_insertion_point(class_scope:proxyASR.ConfigResult)
+  ))
+_sym_db.RegisterMessage(ConfigResult)
+
+ConfigSpeech = _reflection.GeneratedProtocolMessageType('ConfigSpeech', (_message.Message,), dict(
+  DESCRIPTOR = _CONFIGSPEECH,
+  __module__ = 'px_pb2'
+  # @@protoc_insertion_point(class_scope:proxyASR.ConfigSpeech)
+  ))
+_sym_db.RegisterMessage(ConfigSpeech)
+
+ResponseStream = _reflection.GeneratedProtocolMessageType('ResponseStream', (_message.Message,), dict(
+  DESCRIPTOR = _RESPONSESTREAM,
+  __module__ = 'px_pb2'
+  # @@protoc_insertion_point(class_scope:proxyASR.ResponseStream)
+  ))
+_sym_db.RegisterMessage(ResponseStream)
 
 
 import grpc
@@ -88,6 +275,11 @@ class ListenerStub(object):
         request_serializer=StreamChunk.SerializeToString,
         response_deserializer=StreamChunk.FromString,
         )
+    self.DoConfig = channel.unary_unary(
+        '/proxyASR.Listener/DoConfig',
+        request_serializer=ConfigSpeech.SerializeToString,
+        response_deserializer=ConfigResult.FromString,
+        )
 
 
 class ListenerServicer(object):
@@ -95,6 +287,11 @@ class ListenerServicer(object):
   """
 
   def DoChunkStream(self, request_iterator, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DoConfig(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -107,6 +304,11 @@ def add_ListenerServicer_to_server(servicer, server):
           request_deserializer=StreamChunk.FromString,
           response_serializer=StreamChunk.SerializeToString,
       ),
+      'DoConfig': grpc.unary_unary_rpc_method_handler(
+          servicer.DoConfig,
+          request_deserializer=ConfigSpeech.FromString,
+          response_serializer=ConfigResult.SerializeToString,
+      ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
       'proxyASR.Listener', rpc_method_handlers)
@@ -118,6 +320,8 @@ class BetaListenerServicer(object):
   """
   def DoChunkStream(self, request_iterator, context):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
+  def DoConfig(self, request, context):
+    context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
 
 
 class BetaListenerStub(object):
@@ -125,17 +329,23 @@ class BetaListenerStub(object):
   """
   def DoChunkStream(self, request_iterator, timeout, metadata=None, with_call=False, protocol_options=None):
     raise NotImplementedError()
+  def DoConfig(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+    raise NotImplementedError()
+  DoConfig.future = None
 
 
 def beta_create_Listener_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
   request_deserializers = {
     ('proxyASR.Listener', 'DoChunkStream'): StreamChunk.FromString,
+    ('proxyASR.Listener', 'DoConfig'): ConfigSpeech.FromString,
   }
   response_serializers = {
     ('proxyASR.Listener', 'DoChunkStream'): StreamChunk.SerializeToString,
+    ('proxyASR.Listener', 'DoConfig'): ConfigResult.SerializeToString,
   }
   method_implementations = {
     ('proxyASR.Listener', 'DoChunkStream'): face_utilities.stream_stream_inline(servicer.DoChunkStream),
+    ('proxyASR.Listener', 'DoConfig'): face_utilities.unary_unary_inline(servicer.DoConfig),
   }
   server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
   return beta_implementations.server(method_implementations, options=server_options)
@@ -144,12 +354,15 @@ def beta_create_Listener_server(servicer, pool=None, pool_size=None, default_tim
 def beta_create_Listener_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
   request_serializers = {
     ('proxyASR.Listener', 'DoChunkStream'): StreamChunk.SerializeToString,
+    ('proxyASR.Listener', 'DoConfig'): ConfigSpeech.SerializeToString,
   }
   response_deserializers = {
     ('proxyASR.Listener', 'DoChunkStream'): StreamChunk.FromString,
+    ('proxyASR.Listener', 'DoConfig'): ConfigResult.FromString,
   }
   cardinalities = {
     'DoChunkStream': cardinality.Cardinality.STREAM_STREAM,
+    'DoConfig': cardinality.Cardinality.UNARY_UNARY,
   }
   stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
   return beta_implementations.dynamic_stub(channel, 'proxyASR.Listener', cardinalities, options=stub_options)

@@ -11,7 +11,6 @@ import argparse
 # Audio recording parameters
 RATE = 16000
 CHANNELS = 1
-CHUNK = int(RATE / 10)  # 100ms
 
 # Keep the request alive for this many seconds
 DEADLINE_SECS = 8 * 60 * 60
@@ -39,13 +38,15 @@ def make_channel(host, port):
         ssl_channel, auth_plugin)
     return implementations.secure_channel(host, port, composite_channel)
 
-def request_stream(chunkIterator):
+def request_stream(chunkIterator, config):
 
+	print config
 	recognition_config = cloud_speech.RecognitionConfig(
-		encoding='LINEAR16', sample_rate=RATE, max_alternatives=5)
+		encoding= config['encoding'], sample_rate=config['rate'], max_alternatives=config['max_alternatives'], 
+		language_code = config['language'])
 	
 	streaming_config = cloud_speech.StreamingRecognitionConfig(
-		config=recognition_config, interim_results=True, single_utterance=True)
+		config=recognition_config, interim_results=config['interim_results'], single_utterance=True)
 
 	yield cloud_speech.StreamingRecognizeRequest(streaming_config=streaming_config)
 
@@ -55,10 +56,10 @@ def request_stream(chunkIterator):
 		yield cloud_speech.StreamingRecognizeRequest(audio_content=data)
 
 
-def stream(chunkIterator):	
+def stream(chunkIterator, config):	
 	service = cloud_speech.beta_create_Speech_stub(
 		make_channel('speech.googleapis.com', 443))
-	responses = service.StreamingRecognize(request_stream(chunkIterator), DEADLINE_SECS)
+	responses = service.StreamingRecognize(request_stream(chunkIterator, config), DEADLINE_SECS)
 	is_final = False
 	try:
 		for response in responses:
