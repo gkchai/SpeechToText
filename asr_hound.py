@@ -1,18 +1,22 @@
 #!/usr/bin/env python
+
+""" Interface for Hound Speech to Text ASR"""
+
+
 import wave
 import houndify
 import sys
 import time
 import json
 import Queue
-import argparse 
+import argparse
 import thread
 
 class ResponseListener(houndify.HoundListener):
     def __init__(self, responseQueue):
         self.responseQueue = responseQueue
     def onPartialTranscript(self, transcript):
-        self.responseQueue.put(transcript)        
+        self.responseQueue.put(transcript)
     def onFinalResponse(self, response):
         # self.responseQueue.put(response)
         self.responseQueue.put('EOS')
@@ -29,7 +33,7 @@ def credentials():
         creds_json = json.load(f)
     creds = {}
     creds['CLIENT_ID'] = str(creds_json["ClientID"])
-    creds['CLIENT_KEY'] = str(creds_json["ClientKey"])    
+    creds['CLIENT_KEY'] = str(creds_json["ClientKey"])
     return creds
 
 # TODO: Move everything under a single class
@@ -42,22 +46,23 @@ def request_stream(client, chunkIterator, responseQueue):
         client.finish()
     except:
         responseQueue.put('EOS')
-        return 
+        return
 
-def stream(chunkIterator, config):
+def stream(chunkIterator, config=None):
     creds = credentials()
     client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'], "asr_user")
     client.setSampleRate(16000)
     client.setLocation(37.388309, -121.973968)
-    
+
     responseQueue = Queue.Queue()
     client.start(ResponseListener(responseQueue))
     thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
 
     responseIterator =  iter(responseQueue.get, 'EOS')
     for response in responseIterator:
-        yield response
-    
+        yield {'transcript' : response, 'is_final': False}
+    yield {'transcript' : response, 'is_final': True}
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -65,7 +70,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     def generate_chunks(filename, chunkSize=1024):
         if '.raw' in filename:
-            f = open(filename, 'rb')    
+            f = open(filename, 'rb')
             while True:
                 chunk = f.read(chunkSize)
                 if chunk:
@@ -74,8 +79,8 @@ if __name__ == '__main__':
                 else:
                     raise StopIteration
                 time.sleep(0.1)
-        
-        elif '.wav' in filename:    
+
+        elif '.wav' in filename:
             audio = wave.open(filename)
             if audio.getsampwidth() != 2:
                 print "%s: wrong sample width (must be 16-bit)" % filename
@@ -85,7 +90,7 @@ if __name__ == '__main__':
                 raise StopIteration
             if audio.getnchannels() != 1:
                 print "%s: must be single channel (mono)" % filename
-                raise StopIteration     
+                raise StopIteration
 
             while True:
                 chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes

@@ -5,7 +5,7 @@ from google.cloud.speech.v1beta1 import cloud_speech_pb2 as cloud_speech
 from google.rpc import code_pb2
 from grpc.beta import implementations
 import time, random
-import argparse 
+import argparse
 
 
 # Audio recording parameters
@@ -42,9 +42,9 @@ def request_stream(chunkIterator, config):
 
 	print config
 	recognition_config = cloud_speech.RecognitionConfig(
-		encoding= config['encoding'], sample_rate=config['rate'], max_alternatives=config['max_alternatives'], 
+		encoding= config['encoding'], sample_rate=config['rate'], max_alternatives=config['max_alternatives'],
 		language_code = config['language'])
-	
+
 	streaming_config = cloud_speech.StreamingRecognitionConfig(
 		config=recognition_config, interim_results=config['interim_results'], single_utterance=True)
 
@@ -56,26 +56,29 @@ def request_stream(chunkIterator, config):
 		yield cloud_speech.StreamingRecognizeRequest(audio_content=data)
 
 
-def stream(chunkIterator, config):	
+def stream(chunkIterator, config):
 	service = cloud_speech.beta_create_Speech_stub(
 		make_channel('speech.googleapis.com', 443))
 	responses = service.StreamingRecognize(request_stream(chunkIterator, config), DEADLINE_SECS)
 	is_final = False
 	try:
 		for response in responses:
+
 			if response.error.code != code_pb2.OK:
 				raise RuntimeError('Server error: ' + response.error.message)
 
 			if len(response.results) > 0:
-				if response.results[0].alternatives[0].confidence:
+				if response.results[0].is_final:
 					is_final = True
-				yield response.results[0].alternatives[0].transcript
-
+				yield {'transcript': response.results[0].alternatives[0].transcript,
+						'is_final': is_final, 'confidence': (response.results[0].alternatives[0].confidence
+							if is_final else -1)}
 			if is_final:
 				break
+
+
 	except:
-		yield ''
-		# print len(response.results), time.time()
+		raise StopIteration
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -84,7 +87,7 @@ if __name__ == "__main__":
 
 	def generate_chunks(filename, chunkSize=3072):
 	    if '.raw' in filename:
-	        f = open(filename, 'rb')    
+	        f = open(filename, 'rb')
 	        while True:
 	            chunk = f.read(chunkSize)
 	            if chunk:
@@ -93,8 +96,8 @@ if __name__ == "__main__":
 	            else:
 	                raise StopIteration
 	            time.sleep(0.1)
-	    
-	    elif '.wav' in filename:    
+
+	    elif '.wav' in filename:
 	        audio = wave.open(filename)
 	        if audio.getsampwidth() != 2:
 	            print "%s: wrong sample width (must be 16-bit)" % filename
@@ -104,7 +107,7 @@ if __name__ == "__main__":
 	            raise StopIteration
 	        if audio.getnchannels() != 1:
 	            print "%s: must be single channel (mono)" % filename
-	            raise StopIteration     
+	            raise StopIteration
 
 	        while True:
 	            chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='px.proto',
   package='proxyASR',
   syntax='proto3',
-  serialized_pb=_b('\n\x08px.proto\x12\x08proxyASR\"\x1e\n\x0bStreamChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\"\x1e\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xae\x01\n\x0c\x43onfigSpeech\x12\x0b\n\x03\x61sr\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x0c\n\x04rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\"W\n\x0eResponseStream\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\x8d\x01\n\x08Listener\x12\x43\n\rDoChunkStream\x12\x15.proxyASR.StreamChunk\x1a\x15.proxyASR.StreamChunk\"\x00(\x01\x30\x01\x12<\n\x08\x44oConfig\x12\x16.proxyASR.ConfigSpeech\x1a\x16.proxyASR.ConfigResult\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x08px.proto\x12\x08proxyASR\"\x1e\n\x0bStreamChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\"\x1e\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xae\x01\n\x0c\x43onfigSpeech\x12\x0b\n\x03\x61sr\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x0c\n\x04rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\"W\n\x0eResponseStream\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\x90\x01\n\x08Listener\x12\x46\n\rDoChunkStream\x12\x15.proxyASR.StreamChunk\x1a\x18.proxyASR.ResponseStream\"\x00(\x01\x30\x01\x12<\n\x08\x44oConfig\x12\x16.proxyASR.ConfigSpeech\x1a\x16.proxyASR.ConfigResult\"\x00\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -273,7 +273,7 @@ class ListenerStub(object):
     self.DoChunkStream = channel.stream_stream(
         '/proxyASR.Listener/DoChunkStream',
         request_serializer=StreamChunk.SerializeToString,
-        response_deserializer=StreamChunk.FromString,
+        response_deserializer=ResponseStream.FromString,
         )
     self.DoConfig = channel.unary_unary(
         '/proxyASR.Listener/DoConfig',
@@ -302,7 +302,7 @@ def add_ListenerServicer_to_server(servicer, server):
       'DoChunkStream': grpc.stream_stream_rpc_method_handler(
           servicer.DoChunkStream,
           request_deserializer=StreamChunk.FromString,
-          response_serializer=StreamChunk.SerializeToString,
+          response_serializer=ResponseStream.SerializeToString,
       ),
       'DoConfig': grpc.unary_unary_rpc_method_handler(
           servicer.DoConfig,
@@ -340,7 +340,7 @@ def beta_create_Listener_server(servicer, pool=None, pool_size=None, default_tim
     ('proxyASR.Listener', 'DoConfig'): ConfigSpeech.FromString,
   }
   response_serializers = {
-    ('proxyASR.Listener', 'DoChunkStream'): StreamChunk.SerializeToString,
+    ('proxyASR.Listener', 'DoChunkStream'): ResponseStream.SerializeToString,
     ('proxyASR.Listener', 'DoConfig'): ConfigResult.SerializeToString,
   }
   method_implementations = {
@@ -357,7 +357,7 @@ def beta_create_Listener_stub(channel, host=None, metadata_transformer=None, poo
     ('proxyASR.Listener', 'DoConfig'): ConfigSpeech.SerializeToString,
   }
   response_deserializers = {
-    ('proxyASR.Listener', 'DoChunkStream'): StreamChunk.FromString,
+    ('proxyASR.Listener', 'DoChunkStream'): ResponseStream.FromString,
     ('proxyASR.Listener', 'DoConfig'): ConfigResult.FromString,
   }
   cardinalities = {
