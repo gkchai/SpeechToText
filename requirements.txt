@@ -6,3 +6,4 @@ autobahn
 twisted
 pyOpenSSL
 cryptography
+ws4py

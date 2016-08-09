@@ -12,7 +12,7 @@ import wave
 import time
 import base64
 
-# WebSockets
+# WebSocket client
 from ws4py.client.threadedclient import WebSocketClient
 
 def get_credentials():
@@ -31,7 +31,8 @@ class ASRClient(WebSocketClient):
 
 
     def opened(self):
-        data = {"action" : "start", "content-type" : str(self.contentType), "continuous" : True, "interim_results" : True, "inactivity_timeout": 6}
+        data = {"action" : "start", "content-type" : str(self.contentType),
+        "continuous" : True, "interim_results" : True, "inactivity_timeout": 10}
         data['word_confidence'] = True
         data['timestamps'] = True
         data['max_alternatives'] = 3
@@ -80,7 +81,7 @@ class ASRClient(WebSocketClient):
                 bFinal = (jsonObject['results'][0]['final'] == True)
                 self.responseQueue.put(hypothesis)
                 if bFinal:
-                    print "got final", self.listeningMessages
+                    # print "got final", self.listeningMessages
                     self.responseQueue.put('EOS')
                     self.close(2000)
 
@@ -122,7 +123,7 @@ if __name__ == '__main__':
    # logging
    # log.startLogging(sys.stdout)
    parser = argparse.ArgumentParser()
-   parser = argparse.ArgumentParser(description='client to do speech recognition using the WebSocket interface to the Watson STT service')
+   parser = argparse.ArgumentParser(description='speech recognition client interface to Watson STT service')
    parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
    args = parser.parse_args()
    def generate_chunks(filename, chunkSize=1024):
