@@ -61,8 +61,14 @@ def stream(chunkIterator, config):
 		make_channel('speech.googleapis.com', 443))
 	responses = service.StreamingRecognize(request_stream(chunkIterator, config), DEADLINE_SECS)
 	is_final = False
+	got_end_utter = False
+	last_transcript = ''
 	try:
 		for response in responses:
+
+			# print response, response.endpointer_type
+			if response.endpointer_type == 4:
+				got_end_utter = True
 
 			if response.error.code != code_pb2.OK:
 				raise RuntimeError('Server error: ' + response.error.message)
@@ -73,10 +79,16 @@ def stream(chunkIterator, config):
 				yield {'transcript': response.results[0].alternatives[0].transcript,
 						'is_final': is_final, 'confidence': (response.results[0].alternatives[0].confidence
 							if is_final else -1)}
+				last_transcript = response.results[0].alternatives[0].transcript
+
 			if is_final:
 				break
 
-
+			# TODO: This is a hack that skips final transcript to avoid blackouts. Fix it!
+			if (response.endpointer_type == 3  and got_end_utter):
+				yield {'transcript': last_transcript,
+						'is_final': True, 'confidence': -1}
+				break
 	except:
 		raise StopIteration
 

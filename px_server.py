@@ -123,13 +123,16 @@ class Listener(px_pb2.BetaListenerServicer):
 		for ix, asr in enumerate(self.asrs):
 			if asr == 'google':
 				thread.start_new_thread(self._mergeStream,
-					(google.stream(iter(all_queues[ix].get, 'EOS'), self.config), responseQueue, asr))
+					(google.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+						responseQueue, asr))
 			if asr == 'ibm':
 				thread.start_new_thread(self._mergeStream,
-					(ibm.stream(iter(all_queues[ix].get, 'EOS'), self.config), responseQueue, asr))
+					(ibm.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+						responseQueue, asr))
 			if asr == 'hound':
 				thread.start_new_thread(self._mergeStream,
-					(hound.stream(iter(all_queues[ix].get, 'EOS'), self.config), responseQueue, asr))
+					(hound.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+						responseQueue, asr))
 
 		self.endcount = 0
 		for item_json in IterableQueue(responseQueue, self._predicate):
@@ -138,7 +141,8 @@ class Listener(px_pb2.BetaListenerServicer):
 					self.db[asr_id][item_json['asr']] = json.dumps(item_json)
 					self.write(self.db)
 
-				yield px_pb2.ResponseStream(asr = item_json['asr'], transcript = item_json['transcript'],
+				yield px_pb2.ResponseStream(asr = item_json['asr'],
+					transcript = item_json['transcript'],
 					is_final = item_json['is_final'])
 
 

@@ -2,7 +2,8 @@
 Bi-directional streaming ASR service that proxies existing ASRs such as Google Speech, IBM Bluemix speech, Hound ASR etc.
 
 # Install dependicies
-Preferred way is to do in virtualenv
+Preferred way is to do in virtualenv.
+`pip install --upgrade`
 `pip install -r requirements.txt`
 
 # Compile .proto
