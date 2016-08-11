@@ -2,7 +2,7 @@
 Bi-directional streaming ASR service that proxies existing ASRs such as Google Speech, IBM Bluemix speech, Hound ASR etc.
 
 # Install dependicies
-Preferred way is to do in virtualenv.
+Preferred way is to do in virtualenv (Python 2.7).
 `pip install --upgrade`
 `pip install -r requirements.txt`
 
@@ -37,3 +37,7 @@ Return type from the GRPC server
 `{"asr": "google", "transcript": "several tornadoes touch down in"
   "is_final": False}`
 
+# Testing
+
+Individual ASR blocks (Google, IBM, Hound) can be tsted locally as follows:
+`python asr_google.py -in example.raw`

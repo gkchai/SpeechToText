@@ -51,7 +51,7 @@ class Listener(px_pb2.BetaListenerServicer):
 		with open(_LOG_FILE) as f:
 			self.db = json.load(f)
 
-	def write(self, db):
+	def _write(self, db):
 		with open(_LOG_FILE, 'w') as f:
 			json.dump(self.db, f,  sort_keys=True, indent=4)
 
@@ -61,7 +61,6 @@ class Listener(px_pb2.BetaListenerServicer):
 			for Q in listQueues:
 				Q.put(chunk.content)
 			# print(len(chunk.content))
-
 		for Q in listQueues:
 			Q.put('EOS')
 
@@ -139,7 +138,7 @@ class Listener(px_pb2.BetaListenerServicer):
 			if item_json != 'DONE':
 				if item_json['is_final']:
 					self.db[asr_id][item_json['asr']] = json.dumps(item_json)
-					self.write(self.db)
+					self._write(self.db)
 
 				yield px_pb2.ResponseStream(asr = item_json['asr'],
 					transcript = item_json['transcript'],

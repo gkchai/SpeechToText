@@ -99,9 +99,8 @@ class Sender:
 	def clientChunkStream(self, service, filename, chunkSize=1024):
 		""" send stream of chunks contaning audio bytes """
 
-		responses = service.DoChunkStream(self.chunks_from_file(filename, chunkSize), _TIMEOUT_SECONDS_STREAM)
-
-
+		responses = service.DoChunkStream(self.chunks_from_file(filename, chunkSize),
+			_TIMEOUT_SECONDS_STREAM)
 		term = Terminal()
 		print(term.clear)
 		rows_pos = [2, 6, 10]
@@ -121,8 +120,8 @@ class Sender:
 
 
 	def createService(self, port):
-		channel = implementations.insecure_channel('localhost', port) # local
-		# channel = implementations.insecure_channel('10.37.163.202', port) # lenovo server
+		# channel = implementations.insecure_channel('localhost', port) # local
+		channel = implementations.insecure_channel('10.37.163.202', port) # lenovo server
 		# channel = implementations.insecure_channel('52.91.17.237', port) # aws
 		return px_pb2.beta_create_Listener_stub(channel)
 

@@ -20,7 +20,6 @@ def get_credentials():
       creds = json.load(f)
    return creds['credentials']
 
-
 class ASRClient(WebSocketClient):
     def __init__(self, url, headers, chunkIterator, responseQueue, contentType):
         self.chunkIterator = chunkIterator
@@ -54,7 +53,6 @@ class ASRClient(WebSocketClient):
         print "Closed down", code, reason
         if code != 2000:
             self.responseQueue.put('EOS')
-
 
     def received_message(self, msg):
 
@@ -116,7 +114,6 @@ def stream(chunkIterator, config=None):
         e = sys.exc_info()[0]
         print >> sys.stderr, "connection error", e
         raise StopIteration
-
 
 if __name__ == '__main__':
 
