@@ -33,11 +33,11 @@ Assumes rec and sox are installed. Available at http://sox.sourceforge.net/
 `rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_px_client.py -p 8080 -in stdin`
 
 ## Response format
-Return type from the GRPC server
+Return type to the client  is a JSON string
 `{"asr": "google", "transcript": "several tornadoes touch down in"
   "is_final": False}`
 
 # Testing
 
-Individual ASR blocks (Google, IBM, Hound) can be tsted locally as follows:
-`python asr_google.py -in example.raw`
+Individual ASR blocks (XXX = Google, IBM, Hound) can be tsted locally as follows:
+`python asr_XXX.py -in example.raw`
