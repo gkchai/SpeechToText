@@ -95,6 +95,7 @@ class Listener(px_pb2.BetaListenerServicer):
 		self.config['max_alternatives'] = request.max_alternatives
 		self.config['profanity_filter'] = request.profanity_filter
 		self.config['interim_results'] = request.interim_results
+		self.config['continuous'] = request.continuous
 		self.config_set = True
 		return px_pb2.ConfigResult(status=True)
 

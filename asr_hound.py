@@ -2,15 +2,14 @@
 
 """ Interface for Hound Speech to Text ASR"""
 
-
 import wave
 import houndify
 import sys
-import time
 import json
 import Queue
 import argparse
 import thread
+import utils
 
 class ResponseListener(houndify.HoundListener):
     def __init__(self, responseQueue):
@@ -68,41 +67,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
     args = parser.parse_args()
-    def generate_chunks(filename, chunkSize=1024):
-        if '.raw' in filename:
-            f = open(filename, 'rb')
-            while True:
-                chunk = f.read(chunkSize)
-                if chunk:
-                    print len(chunk)
-                    yield chunk
-                else:
-                    raise StopIteration
-                time.sleep(0.1)
 
-        elif '.wav' in filename:
-            audio = wave.open(filename)
-            if audio.getsampwidth() != 2:
-                print "%s: wrong sample width (must be 16-bit)" % filename
-                raise StopIteration
-            if audio.getframerate() != 8000 and audio.getframerate() != 16000:
-                print "%s: unsupported sampling frequency (must be either 8 or 16 khz)" % filename
-                raise StopIteration
-            if audio.getnchannels() != 1:
-                print "%s: must be single channel (mono)" % filename
-                raise StopIteration
-
-            while True:
-                chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes
-                if chunk:
-                    print len(chunk)
-                    yield chunk
-                else:
-                    raise StopIteration
-                time.sleep(0.1)
-        else:
-            raise StopIteration
-
-    responses = stream(generate_chunks(args.filename, 3072))
+    responses = stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072))
     for response in responses:
         print response

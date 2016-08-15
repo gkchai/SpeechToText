@@ -6,7 +6,7 @@ from google.rpc import code_pb2
 from grpc.beta import implementations
 import time, random
 import argparse
-
+import utils, sys
 
 # Audio recording parameters
 RATE = 16000
@@ -42,11 +42,13 @@ def request_stream(chunkIterator, config):
 
 	print config
 	recognition_config = cloud_speech.RecognitionConfig(
-		encoding= config['encoding'], sample_rate=config['rate'], max_alternatives=config['max_alternatives'],
+		encoding= config['encoding'], sample_rate=config['rate'],
+		max_alternatives=config['max_alternatives'],
 		language_code = config['language'])
 
 	streaming_config = cloud_speech.StreamingRecognitionConfig(
-		config=recognition_config, interim_results=config['interim_results'], single_utterance=True)
+		config=recognition_config, interim_results=config['interim_results'],
+		single_utterance=not(config['continuous']))
 
 	yield cloud_speech.StreamingRecognizeRequest(streaming_config=streaming_config)
 
@@ -56,7 +58,7 @@ def request_stream(chunkIterator, config):
 		yield cloud_speech.StreamingRecognizeRequest(audio_content=data)
 
 
-def stream(chunkIterator, config):
+def stream(chunkIterator, config=None):
 	service = cloud_speech.beta_create_Speech_stub(
 		make_channel('speech.googleapis.com', 443))
 	responses = service.StreamingRecognize(request_stream(chunkIterator, config), DEADLINE_SECS)
@@ -65,7 +67,28 @@ def stream(chunkIterator, config):
 	last_transcript = ''
 	try:
 		for response in responses:
+			#  A good sequence of responses from ASR is
+			#  1) endpointer_type: START_OF_SPEECH
+			#  2) endpointer_type: END_OF_UTTERANCE
+			#  3) endpointer_type: END_OF_AUDIO
+			#  4) results = {alternatives {..}, ..., is_final: True}
 
+			# An unusual sequence of responses from ASR is
+			#  1) endpointer_type: START_OF_SPEECH
+			#  2) endpointer_type: START_OF_SPEECH
+			#  3) endpointer_type: START_OF_SPEECH
+			#  4) endpointer_type: END_OF_UTTERANCE
+			#  5) endpointer_type: END_OF_AUDIO
+			#  6) Timeout and no result
+			#  OR
+			#  1) endpointer_type: START_OF_SPEECH
+			#  2) Timeout and no result
+
+
+			# endpointer codes:
+			# START_OF_SPEECH = 1
+			# END_OF_UTTERANCE = 4
+			# END_OF_AUDIO = 3
 			# print response, response.endpointer_type
 			if response.endpointer_type == 4:
 				got_end_utter = True
@@ -85,53 +108,31 @@ def stream(chunkIterator, config):
 				break
 
 			# TODO: This is a hack that skips final transcript to avoid blackouts. Fix it!
-			if (response.endpointer_type == 3  and got_end_utter):
-				yield {'transcript': last_transcript,
-						'is_final': True, 'confidence': -1}
-				break
+			# if (response.endpointer_type == 3  and got_end_utter):
+			# 	yield {'transcript': last_transcript,
+			# 			'is_final': True, 'confidence': -1}
+			# 	break
 	except:
+		e = sys.exc_info()[0]
+		print >> sys.stderr, "google connection error", e
+		yield {'transcript' : '', 'is_final': True}
 		raise StopIteration
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
 	args = parser.parse_args()
+	config = {
+	"language": "en-US",
+	"encoding":"LINEAR16",
+	"rate":16000,
+	"max_alternatives":5,
+	"interim_results": True,
+	"profanity_filter": True,
+	"continuous": False,
+	}
 
-	def generate_chunks(filename, chunkSize=3072):
-	    if '.raw' in filename:
-	        f = open(filename, 'rb')
-	        while True:
-	            chunk = f.read(chunkSize)
-	            if chunk:
-	                print len(chunk)
-	                yield chunk
-	            else:
-	                raise StopIteration
-	            time.sleep(0.1)
-
-	    elif '.wav' in filename:
-	        audio = wave.open(filename)
-	        if audio.getsampwidth() != 2:
-	            print "%s: wrong sample width (must be 16-bit)" % filename
-	            raise StopIteration
-	        if audio.getframerate() != 8000 and audio.getframerate() != 16000:
-	            print "%s: unsupported sampling frequency (must be either 8 or 16 khz)" % filename
-	            raise StopIteration
-	        if audio.getnchannels() != 1:
-	            print "%s: must be single channel (mono)" % filename
-	            raise StopIteration
-
-	        while True:
-	            chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes
-	            if chunk:
-	                print len(chunk)
-	                yield chunk
-	            else:
-	                raise StopIteration
-	            time.sleep(0.1)
-	    else:
-	        raise StopIteration
-
-	responses = stream(generate_chunks(args.filename, 3072))
+	responses = stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072),
+		config)
 	for response in responses:
-		print '', #response
+		print response

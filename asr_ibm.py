@@ -8,9 +8,8 @@ import sys                                       # system calls
 import argparse                                  # for parsing arguments
 import thread
 import Queue
-import wave
-import time
 import base64
+import utils
 
 # WebSocket client
 from ws4py.client.threadedclient import WebSocketClient
@@ -31,7 +30,7 @@ class ASRClient(WebSocketClient):
 
     def opened(self):
         data = {"action" : "start", "content-type" : str(self.contentType),
-        "continuous" : True, "interim_results" : True, "inactivity_timeout": 10}
+        "continuous" : False, "interim_results" : True, "inactivity_timeout": 10}
         data['word_confidence'] = True
         data['timestamps'] = True
         data['max_alternatives'] = 3
@@ -44,7 +43,7 @@ class ASRClient(WebSocketClient):
                     self.send(data, binary=True)
                 self.send(b'', binary=True)
             except:
-                print "Closed called by server"
+                print "Abort sending. Closed called by server"
 
         t = threading.Thread(target=send_chunk)
         t.start()
@@ -112,7 +111,8 @@ def stream(chunkIterator, config=None):
 
     except:
         e = sys.exc_info()[0]
-        print >> sys.stderr, "connection error", e
+        print >> sys.stderr, "ibm connection error", e
+        yield {'transcript' : '', 'is_final': True}
         raise StopIteration
 
 if __name__ == '__main__':
@@ -123,41 +123,8 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser(description='speech recognition client interface to Watson STT service')
    parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
    args = parser.parse_args()
-   def generate_chunks(filename, chunkSize=1024):
-     if '.raw' in filename:
-         f = open(filename, 'rb')
-         while True:
-             chunk = f.read(chunkSize)
-             if chunk:
-                 print len(chunk)
-                 yield chunk
-             else:
-                 raise StopIteration
-             time.sleep(0.1)
 
-     elif '.wav' in filename:
-         audio = wave.open(filename)
-         if audio.getsampwidth() != 2:
-             print "%s: wrong sample width (must be 16-bit)" % filename
-             raise StopIteration
-         if audio.getframerate() != 8000 and audio.getframerate() != 16000:
-             print "%s: unsupported sampling frequency (must be either 8 or 16 khz)" % filename
-             raise StopIteration
-         if audio.getnchannels() != 1:
-             print "%s: must be single channel (mono)" % filename
-             raise StopIteration
-
-         while True:
-             chunk = audio.readframes(chunkSize//2) #each wav frame is 2 bytes
-             if chunk:
-                 print len(chunk)
-                 yield chunk
-             else:
-                 raise StopIteration
-             time.sleep(0.1)
-     else:
-         raise StopIteration
-
-   responses = stream(generate_chunks(args.filename, 3072))
+   responses = stream(utils.generate_chunks(args.filename, grpc_on=False,
+       chunkSize=3072))
    for response in responses:
      print response
