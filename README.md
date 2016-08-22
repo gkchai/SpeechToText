@@ -3,17 +3,18 @@ Bi-directional streaming ASR service that proxies existing ASRs such as Google S
 
 # Install dependicies
 Preferred way is to do in virtualenv (Python 2.7).
-`pip install --upgrade`
+`pip install --upgrade pip`
 `pip install -r requirements.txt`
 
 # Compile .proto
+`cd proto`
 `python -m grpc.tools.protoc -I . --python_out=. --grpc_python_out=. px.proto`
 
 # Proxy server
 
 ## Credentials
 Run the following command in the terminal to set the Google ASR credential path
-`export GOOGLE_APPLICATION_CREDENTIALS=google_key.json`
+`export GOOGLE_APPLICATION_CREDENTIALS=asr/google_key.json`
 
 ## Start server
 Start the server on a given port. Running on ports below 1024 requires root privileges.
@@ -40,4 +41,4 @@ Return type to the client  is a JSON string
 # Testing
 
 Individual ASR blocks (XXX = Google, IBM, Hound) can be tsted locally as follows:
-`python asr_XXX.py -in example.raw`
+`python -m asr.XXX -in example.raw`

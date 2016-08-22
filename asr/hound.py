@@ -28,7 +28,7 @@ class ResponseListener(houndify.HoundListener):
 
 
 def credentials():
-    with open("hound_key.json") as f:
+    with open("asr/hound_key.json") as f:
         creds_json = json.load(f)
     creds = {}
     creds['CLIENT_ID'] = str(creds_json["ClientID"])

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """Proxy ASR server implementation in GRPC"""
 
-import px_pb2
+from proto import px_pb2
 import time
 import random
-import asr_google as google
-import asr_hound as hound
-import asr_ibm as ibm
+import asr.goog as google
+import asr.hound as hound
+import asr.ibm as ibm
 import threading
 import json
 import itertools

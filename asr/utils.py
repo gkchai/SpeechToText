@@ -1,7 +1,7 @@
 """ Common utlities """
 
 import sys
-import px_pb2
+import proto.px_pb2 as px_pb2
 import time
 import wave
 

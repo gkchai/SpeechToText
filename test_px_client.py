@@ -1,8 +1,8 @@
 """Test ASR client implementation in GRPC"""
 
 from __future__ import print_function
-import utils
-import px_pb2
+import asr.utils as utils
+from proto import px_pb2
 from grpc.beta import implementations
 import argparse
 import random
@@ -83,8 +83,8 @@ class Sender:
 		"helpers": [
 					"hound",
 					# "ibm",
-					# "cortana",
-					# "google",
+					# "apiai",
+					"google",
 					# "alexa"
 				],
 		"text": trans['google'],

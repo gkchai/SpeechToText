@@ -15,7 +15,7 @@ import utils
 from ws4py.client.threadedclient import WebSocketClient
 
 def get_credentials():
-   with open('ibm_key.json') as f:
+   with open('asr/ibm_key.json') as f:
       creds = json.load(f)
    return creds['credentials']
 
