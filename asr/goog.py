@@ -17,106 +17,117 @@ DEADLINE_SECS = 8 * 60 * 60
 # DEADLINE_SECS = 10
 SPEECH_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
+class worker:
 
-def make_channel(host, port):
-    """Creates an SSL channel with auth credentials from the environment."""
-    # In order to make an https call, use an ssl channel with defaults
-    ssl_channel = implementations.ssl_channel_credentials(None, None, None)
+	def __init__(self):
+		self.got_end_audio = False
 
-    # Grab application default credentials from the environment
-    creds = get_credentials().create_scoped([SPEECH_SCOPE])
-    # Add a plugin to inject the creds into the header
-    auth_header = (
-        'Authorization',
-        'Bearer ' + creds.get_access_token().access_token)
-    auth_plugin = implementations.metadata_call_credentials(
-        lambda _, cb: cb([auth_header], None),
-        name='google_creds')
+	def make_channel(self, host, port):
+	    """Creates an SSL channel with auth credentials from the environment."""
+	    # In order to make an https call, use an ssl channel with defaults
+	    ssl_channel = implementations.ssl_channel_credentials(None, None, None)
 
-    # compose the two together for both ssl and google auth
-    composite_channel = implementations.composite_channel_credentials(
-        ssl_channel, auth_plugin)
-    return implementations.secure_channel(host, port, composite_channel)
+	    # Grab application default credentials from the environment
+	    creds = get_credentials().create_scoped([SPEECH_SCOPE])
+	    # Add a plugin to inject the creds into the header
+	    auth_header = (
+	        'Authorization',
+	        'Bearer ' + creds.get_access_token().access_token)
+	    auth_plugin = implementations.metadata_call_credentials(
+	        lambda _, cb: cb([auth_header], None),
+	        name='google_creds')
 
-def request_stream(chunkIterator, config):
+	    # compose the two together for both ssl and google auth
+	    composite_channel = implementations.composite_channel_credentials(
+	        ssl_channel, auth_plugin)
+	    return implementations.secure_channel(host, port, composite_channel)
 
-	print config
-	recognition_config = cloud_speech.RecognitionConfig(
-		encoding= config['encoding'], sample_rate=config['rate'],
-		max_alternatives=config['max_alternatives'],
-		language_code = config['language'])
+	def request_stream(self, chunkIterator, config):
 
-	streaming_config = cloud_speech.StreamingRecognitionConfig(
-		config=recognition_config, interim_results=config['interim_results'],
-		single_utterance=not(config['continuous']))
+		# print config
+		recognition_config = cloud_speech.RecognitionConfig(
+			encoding= config['encoding'], sample_rate=config['rate'],
+			max_alternatives=config['max_alternatives'],
+			language_code = config['language'])
 
-	yield cloud_speech.StreamingRecognizeRequest(streaming_config=streaming_config)
+		streaming_config = cloud_speech.StreamingRecognitionConfig(
+			config=recognition_config, interim_results=config['interim_results'],
+			single_utterance=not(config['continuous']))
 
-	for data in chunkIterator:
-		# Subsequent requests can all just have the content
-		# time.sleep(random.uniform(0.01, 0.2))
-		yield cloud_speech.StreamingRecognizeRequest(audio_content=data)
+		yield cloud_speech.StreamingRecognizeRequest(streaming_config=streaming_config)
 
-
-def stream(chunkIterator, config=None):
-	service = cloud_speech.beta_create_Speech_stub(
-		make_channel('speech.googleapis.com', 443))
-	responses = service.StreamingRecognize(request_stream(chunkIterator, config), DEADLINE_SECS)
-	is_final = False
-	got_end_utter = False
-	last_transcript = ''
-	try:
-		for response in responses:
-			#  A good sequence of responses from ASR is
-			#  1) endpointer_type: START_OF_SPEECH
-			#  2) endpointer_type: END_OF_UTTERANCE
-			#  3) endpointer_type: END_OF_AUDIO
-			#  4) results = {alternatives {..}, ..., is_final: True}
-
-			# An unusual sequence of responses from ASR is
-			#  1) endpointer_type: START_OF_SPEECH
-			#  2) endpointer_type: START_OF_SPEECH
-			#  3) endpointer_type: START_OF_SPEECH
-			#  4) endpointer_type: END_OF_UTTERANCE
-			#  5) endpointer_type: END_OF_AUDIO
-			#  6) Timeout and no result
-			#  OR
-			#  1) endpointer_type: START_OF_SPEECH
-			#  2) Timeout and no result
+		for data in chunkIterator:
+			# Subsequent requests can all just have the content
+			if self.got_end_audio:
+				raise StopIteration
+			else:
+				yield cloud_speech.StreamingRecognizeRequest(audio_content=data)
 
 
-			# endpointer codes:
-			# START_OF_SPEECH = 1
-			# END_OF_UTTERANCE = 4
-			# END_OF_AUDIO = 3
-			# print response, response.endpointer_type
-			if response.endpointer_type == 4:
-				got_end_utter = True
+	def stream(self, chunkIterator, config=None):
 
-			if response.error.code != code_pb2.OK:
-				raise RuntimeError('Server error: ' + response.error.message)
+		is_final = False
+		last_transcript = ''
+		last_confidence = -1
 
-			if len(response.results) > 0:
-				if response.results[0].is_final:
-					is_final = True
-				yield {'transcript': response.results[0].alternatives[0].transcript,
-						'is_final': is_final, 'confidence': (response.results[0].alternatives[0].confidence
-							if is_final else -1)}
-				last_transcript = response.results[0].alternatives[0].transcript
+		try:
+			service = cloud_speech.beta_create_Speech_stub(
+				self.make_channel('speech.googleapis.com', 443))
+			responses = service.StreamingRecognize(self.request_stream(chunkIterator, config),
+						DEADLINE_SECS)
 
-			if is_final:
-				break
+			for response in responses:
+				#  A good sequence of responses from ASR is
+				#  1) endpointer_type: START_OF_SPEECH
+				#  2) endpointer_type: END_OF_UTTERANCE
+				#  3) endpointer_type: END_OF_AUDIO
+				#  4) results = {alternatives {..}, ..., is_final: True}
 
-			# TODO: This is a hack that skips final transcript to avoid blackouts. Fix it!
-			# if (response.endpointer_type == 3  and got_end_utter):
-			# 	yield {'transcript': last_transcript,
-			# 			'is_final': True, 'confidence': -1}
-			# 	break
-	except:
-		e = sys.exc_info()[0]
-		print >> sys.stderr, "google connection error", e
-		yield {'transcript' : '', 'is_final': True}
-		raise StopIteration
+				# An unusual sequence of responses from ASR is
+				#  1) endpointer_type: START_OF_SPEECH
+				#  2) endpointer_type: START_OF_SPEECH
+				#  3) endpointer_type: START_OF_SPEECH
+				#  4) endpointer_type: END_OF_UTTERANCE
+				#  5) endpointer_type: END_OF_AUDIO
+				#  6) Timeout and no result
+				#  OR
+				#  1) endpointer_type: START_OF_SPEECH
+				#  2) endpointer_type: END_OF_AUDIO
+				#  3) Timeout and no result
+
+				# endpointer codes:
+				# START_OF_SPEECH = 1
+				# END_OF_UTTERANCE = 4
+				# END_OF_AUDIO = 3
+
+				# print response, response.endpointer_type
+				if response.endpointer_type == 3:
+					self.got_end_audio = True
+
+				if response.error.code != code_pb2.OK:
+					raise RuntimeError('Server error: ' + response.error.message)
+
+				# skip responses that contain endpoints but no results
+				if len(response.results) > 0:
+
+					last_transcript = response.results[0].alternatives[0].transcript
+
+					if response.results[0].is_final:
+						last_confidence = response.results[0].alternatives[0].confidence
+						raise
+					else:
+						yield {'transcript': last_transcript,
+							'is_final': False,
+							'confidence': -1
+							}
+
+		except:
+			e = sys.exc_info()[0]
+			print >> sys.stderr, "google connection error", e
+
+		finally:
+			yield {'transcript' : last_transcript, 'is_final': True,
+					'confidence': last_confidence}
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -132,7 +143,8 @@ if __name__ == "__main__":
 	"continuous": False,
 	}
 
-	responses = stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072),
+	W = worker()
+	responses = W.stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072),
 		config)
 	for response in responses:
 		print response

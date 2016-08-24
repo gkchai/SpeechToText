@@ -1,5 +1,5 @@
 {
-	"asr": ["google", "ibm"],
+	"asr": ["google", "ibm", "hound"],
 	"language": "en-US",
 	"encoding":"LINEAR16",
 	"rate":16000,

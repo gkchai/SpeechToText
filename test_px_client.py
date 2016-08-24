@@ -84,7 +84,8 @@ class Sender:
 					"hound",
 					# "ibm",
 					# "apiai",
-					"google",
+					"google_knowledge",
+					"google_search"
 					# "alexa"
 				],
 		"text": trans['google'],

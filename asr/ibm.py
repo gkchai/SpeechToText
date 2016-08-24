@@ -101,19 +101,20 @@ def stream(chunkIterator, config=None):
     url = "wss://" + hostname + "/speech-to-text/api/v1/recognize?model=" + model
 
     responseQueue = Queue.Queue()
-    client = ASRClient(url, headers, chunkIterator, responseQueue, contentType)
+
+    last_transcript = ''
     try:
+        client = ASRClient(url, headers, chunkIterator, responseQueue, contentType)
         client.connect()
         responseIterator =  iter(responseQueue.get, 'EOS')
         for response in responseIterator:
-            yield {'transcript' : response, 'is_final': False}
-        yield {'transcript' : response, 'is_final': True}
-
+            last_transcript = response
+            yield {'transcript' : last_transcript, 'is_final': False}
     except:
         e = sys.exc_info()[0]
         print >> sys.stderr, "ibm connection error", e
-        yield {'transcript' : '', 'is_final': True}
-        raise StopIteration
+    finally:
+        yield {'transcript' : last_transcript, 'is_final': True}
 
 if __name__ == '__main__':
 

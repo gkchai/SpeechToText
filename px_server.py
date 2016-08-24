@@ -122,8 +122,9 @@ class Listener(px_pb2.BetaListenerServicer):
 		responseQueue = Queue.Queue()
 		for ix, asr in enumerate(self.asrs):
 			if asr == 'google':
+				gw = google.worker()
 				thread.start_new_thread(self._mergeStream,
-					(google.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+					(gw.stream(iter(all_queues[ix].get, 'EOS'), self.config),
 						responseQueue, asr))
 			if asr == 'ibm':
 				thread.start_new_thread(self._mergeStream,

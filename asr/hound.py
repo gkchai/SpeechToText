@@ -19,12 +19,12 @@ class ResponseListener(houndify.HoundListener):
     def onFinalResponse(self, response):
         # self.responseQueue.put(response)
         self.responseQueue.put('EOS')
-        print "Final response: " + response
+        # print "Final response: " + response
     def onTranslatedResponse(self, response):
         print "Translated response: " + response
     def onError(self, err):
         self.responseQueue.put('EOS')
-        print "ERROR"
+        print "Hound ERROR"
 
 
 def credentials():
@@ -48,19 +48,28 @@ def request_stream(client, chunkIterator, responseQueue):
         return
 
 def stream(chunkIterator, config=None):
-    creds = credentials()
-    client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'], "asr_user")
-    client.setSampleRate(16000)
-    client.setLocation(37.388309, -121.973968)
 
-    responseQueue = Queue.Queue()
-    client.start(ResponseListener(responseQueue))
-    thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
+    last_transcript = ''
+    try:
+        creds = credentials()
+        client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'], "asr_user")
+        client.setSampleRate(16000)
+        client.setLocation(37.388309, -121.973968)
 
-    responseIterator =  iter(responseQueue.get, 'EOS')
-    for response in responseIterator:
-        yield {'transcript' : response, 'is_final': False}
-    yield {'transcript' : response, 'is_final': True}
+        responseQueue = Queue.Queue()
+        client.start(ResponseListener(responseQueue))
+        thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
+
+        responseIterator =  iter(responseQueue.get, 'EOS')
+        for response in responseIterator:
+            last_transcript = response
+            yield {'transcript' : last_transcript, 'is_final': False, 'confidence': -1}
+
+    except:
+        e = sys.exc_info()[0]
+        print >> sys.stderr, "hound connection error", e
+    finally:
+        yield {'transcript' : last_transcript, 'is_final': True, 'confidence': 1}
 
 
 if __name__ == '__main__':
