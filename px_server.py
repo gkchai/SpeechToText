@@ -2,19 +2,22 @@
 """Proxy ASR server implementation in GRPC"""
 
 from proto import px_pb2
-import time
-import random
+
+import argparse
 import asr.goog as google
 import asr.hound as hound
 import asr.ibm as ibm
-import threading
-import json
 import itertools
-import thread
-import Queue
-import uuid
-import argparse
+import json
 import os
+import Queue
+import random
+import sys
+import thread
+import threading
+import time
+import uuid
+
 
 _SUPPORTED_ASR = ["google", "hound", "ibm"]
 _LOG_PATH = './log/'
@@ -48,10 +51,23 @@ class Listener(px_pb2.BetaListenerServicer):
 		""" put initializaiton code e.g. db access """
 		self.config = {}
 		self.config_set = False
-		with open(_LOG_FILE) as f:
-			self.db = json.load(f)
+		try:
+			f = open(_LOG_FILE)
 
-	def _write(self, db):
+			try:
+				self.db = json.load(f)
+			except ValueError as e:
+				print("'" + _LOG_FILE + "' is not a valid JSON file.")
+				print("Continuing.")
+				self.db = {}
+			finally:
+				f.close()
+
+		except EnvironmentError as e:
+			print(_LOG_FILE + ": " + e.args[1])
+			print("Continuing.")
+
+	def _write(self):
 		with open(_LOG_FILE, 'w') as f:
 			json.dump(self.db, f,  sort_keys=True, indent=4)
 
@@ -140,7 +156,7 @@ class Listener(px_pb2.BetaListenerServicer):
 			if item_json != 'DONE':
 				if item_json['is_final']:
 					self.db[asr_id][item_json['asr']] = json.dumps(item_json)
-					self._write(self.db)
+					self._write()
 
 				yield px_pb2.ResponseStream(asr = item_json['asr'],
 					transcript = item_json['transcript'],
@@ -158,7 +174,6 @@ def serve(port):
 		server.stop(0)
 
 if __name__ == '__main__':
-
 	parser = argparse.ArgumentParser(description='Proxy ASR service')
 	parser.add_argument('-p', action='store', dest='port', type=int, default=8080, help='port')
 	args = parser.parse_args()
