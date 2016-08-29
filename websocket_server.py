@@ -9,7 +9,7 @@ from tornado.queues import Queue
 from test_px_client import *
 import json
 import thread
-import px_pb2
+from proto import px_pb2
 import Queue as Qu
 
 from tornado.options import define, options, parse_command_line
