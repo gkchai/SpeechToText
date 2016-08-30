@@ -17,8 +17,8 @@ import argparse
 import os
 
 _SUPPORTED_ASR = ["google", "hound", "ibm"]
-_LOG_PATH = './log/'
-_LOG_FILE = './log/log.json'
+_LOG_PATH = 'log/'
+_LOG_FILE = 'log/log.json'
 
 class IterableQueue():
 
@@ -160,6 +160,7 @@ def serve(port):
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Proxy ASR service')
-	parser.add_argument('-p', action='store', dest='port', type=int, default=8080, help='port')
+	parser.add_argument('-p', action='store', dest='port', type=int, default=8080,
+		help='port')
 	args = parser.parse_args()
 	serve(args.port)

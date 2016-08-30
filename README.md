@@ -40,5 +40,5 @@ Return type to the client  is a JSON string
 
 # Testing
 
-Individual ASR blocks (XXX = Google, IBM, Hound) can be tsted locally as follows:
+Individual ASR blocks (XXX = goog, ibm, hound) can be tsted locally as follows:
 `python -m asr.XXX -in example.raw`

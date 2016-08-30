@@ -52,7 +52,8 @@ def stream(chunkIterator, config=None):
     last_transcript = ''
     try:
         creds = credentials()
-        client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'], "asr_user")
+        client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'],
+            "asr_user")
         client.setSampleRate(16000)
         client.setLocation(37.388309, -121.973968)
 
@@ -74,7 +75,8 @@ def stream(chunkIterator, config=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
+    parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw',
+        help='audio file')
     args = parser.parse_args()
 
     responses = stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072))

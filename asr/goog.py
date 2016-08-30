@@ -114,7 +114,7 @@ class worker:
 
 					if response.results[0].is_final:
 						last_confidence = response.results[0].alternatives[0].confidence
-						raise
+						break
 					else:
 						yield {'transcript': last_transcript,
 							'is_final': False,
