@@ -15,6 +15,9 @@ import Queue
 import uuid
 import argparse
 import os
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 _SUPPORTED_ASR = ["google", "hound", "ibm"]
 _LOG_PATH = 'log/'
@@ -22,16 +25,28 @@ _LOG_FILE = 'log/log.json'
 
 class IterableQueue():
 
-	def __init__(self, Q, predicate):
+	def __init__(self, Q, num_asrs):
 		self.Q = Q
-		self.predicate = predicate
+		self.endcount = 0
+		self.num_asrs = num_asrs
 
 	def __iter__(self):
 		return self
 
+	def _predicate(self, x):
+		if x == 'DONE':
+			self.endcount += 1
+			if self.endcount == self.num_asrs:
+				return False
+			else:
+				return True
+		else:
+			return True
+
+
 	def next(self):
 		item = self.Q.get()
-		if self.predicate(item):
+		if self._predicate(item):
 			return item
 		else:
 			raise StopIteration
@@ -50,16 +65,19 @@ class Listener(px_pb2.BetaListenerServicer):
 		self.config_set = False
 		with open(_LOG_FILE) as f:
 			self.db = json.load(f)
+		logger.debug('PX_server initialized')
 
 	def _write(self, db):
 		with open(_LOG_FILE, 'w') as f:
 			json.dump(self.db, f,  sort_keys=True, indent=4)
 
-	def _splitStream(self, request_iterator, listQueues):
+	def _splitStream(self, request_iterator, listQueues, get_token):
 
 		for chunk in request_iterator:
 			for Q in listQueues:
 				Q.put(chunk.content)
+				if len(get_token) == 0:
+					get_token.append(chunk.token)
 			# print(len(chunk.content))
 		for Q in listQueues:
 			Q.put('EOS')
@@ -73,15 +91,6 @@ class Listener(px_pb2.BetaListenerServicer):
 			responseQueue.put(toClient_json)
 		responseQueue.put('DONE')
 
-	def _predicate(self, x):
-		if x == 'DONE':
-			self.endcount += 1
-			if self.endcount == len(self.asrs):
-				return False
-			else:
-				return True
-		else:
-			return True
 
 	def DoConfig(self, request, context):
 
@@ -97,6 +106,7 @@ class Listener(px_pb2.BetaListenerServicer):
 		self.config['interim_results'] = request.interim_results
 		self.config['continuous'] = request.continuous
 		self.config_set = True
+		logger.debug('ProxyASR configuration done')
 		return px_pb2.ConfigResult(status=True)
 
 
@@ -109,6 +119,8 @@ class Listener(px_pb2.BetaListenerServicer):
 		print "Request-id: %s"%asr_id
 		self.db[asr_id] = {}
 
+		logger.debug('%s: ProxyASR doing chunk stream', asr_id)
+
 		all_queues = []
 		for _ in range(len(self.asrs)):
 			all_queues.append(Queue.Queue())
@@ -116,13 +128,15 @@ class Listener(px_pb2.BetaListenerServicer):
 		# log queue
 		all_queues.append(Queue.Queue())
 
-		thread.start_new_thread(self._splitStream, (request_iterator, all_queues))
+		get_token = []
+
+		thread.start_new_thread(self._splitStream, (request_iterator, all_queues, get_token))
 		thread.start_new_thread(LogStream, (iter(all_queues[-1].get, 'EOS'), asr_id))
 
 		responseQueue = Queue.Queue()
 		for ix, asr in enumerate(self.asrs):
 			if asr == 'google':
-				gw = google.worker()
+				gw = google.worker(asr_id)
 				thread.start_new_thread(self._mergeStream,
 					(gw.stream(iter(all_queues[ix].get, 'EOS'), self.config),
 						responseQueue, asr))
@@ -135,16 +149,19 @@ class Listener(px_pb2.BetaListenerServicer):
 					(hound.stream(iter(all_queues[ix].get, 'EOS'), self.config),
 						responseQueue, asr))
 
-		self.endcount = 0
-		for item_json in IterableQueue(responseQueue, self._predicate):
+
+		for item_json in IterableQueue(responseQueue, len(self.asrs)):
 			if item_json != 'DONE':
 				if item_json['is_final']:
 					self.db[asr_id][item_json['asr']] = json.dumps(item_json)
+					self.db[asr_id]['token'] = get_token[0]
 					self._write(self.db)
 
 				yield px_pb2.ResponseStream(asr = item_json['asr'],
 					transcript = item_json['transcript'],
-					is_final = item_json['is_final'])
+					is_final = item_json['is_final'],
+					confidence = 1.0,
+					token = get_token[0])
 
 
 def serve(port):

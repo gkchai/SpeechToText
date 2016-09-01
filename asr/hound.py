@@ -10,6 +10,9 @@ import Queue
 import argparse
 import thread
 import utils
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ResponseListener(houndify.HoundListener):
     def __init__(self, responseQueue):
@@ -19,7 +22,7 @@ class ResponseListener(houndify.HoundListener):
     def onFinalResponse(self, response):
         # self.responseQueue.put(response)
         self.responseQueue.put('EOS')
-        # print "Final response: " + response
+        logger.info("Hound finished ")
     def onTranslatedResponse(self, response):
         print "Translated response: " + response
     def onError(self, err):
@@ -59,6 +62,7 @@ def stream(chunkIterator, config=None):
 
         responseQueue = Queue.Queue()
         client.start(ResponseListener(responseQueue))
+        logger.info("Hound Initialized")
         thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
 
         responseIterator =  iter(responseQueue.get, 'EOS')

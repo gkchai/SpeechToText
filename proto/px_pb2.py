@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='px.proto',
   package='proxyASR',
   syntax='proto3',
-  serialized_pb=_b('\n\x08px.proto\x12\x08proxyASR\"\x1e\n\x0bStreamChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\"\x1e\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xae\x01\n\x0c\x43onfigSpeech\x12\x0b\n\x03\x61sr\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x0c\n\x04rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\"W\n\x0eResponseStream\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\x90\x01\n\x08Listener\x12\x46\n\rDoChunkStream\x12\x15.proxyASR.StreamChunk\x1a\x18.proxyASR.ResponseStream\"\x00(\x01\x30\x01\x12<\n\x08\x44oConfig\x12\x16.proxyASR.ConfigSpeech\x1a\x16.proxyASR.ConfigResult\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x08px.proto\x12\x08proxyASR\"-\n\x0bStreamChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\x12\r\n\x05token\x18\x02 \x01(\t\"\x1e\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xae\x01\n\x0c\x43onfigSpeech\x12\x0b\n\x03\x61sr\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x0c\n\x04rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\"f\n\x0eResponseStream\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x12\r\n\x05token\x18\x05 \x01(\t2\x90\x01\n\x08Listener\x12\x46\n\rDoChunkStream\x12\x15.proxyASR.StreamChunk\x1a\x18.proxyASR.ResponseStream\"\x00(\x01\x30\x01\x12<\n\x08\x44oConfig\x12\x16.proxyASR.ConfigSpeech\x1a\x16.proxyASR.ConfigResult\"\x00\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -40,6 +40,13 @@ _STREAMCHUNK = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='token', full_name='proxyASR.StreamChunk.token', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -53,7 +60,7 @@ _STREAMCHUNK = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=22,
-  serialized_end=52,
+  serialized_end=67,
 )
 
 
@@ -83,8 +90,8 @@ _CONFIGRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=54,
-  serialized_end=84,
+  serialized_start=69,
+  serialized_end=99,
 )
 
 
@@ -163,8 +170,8 @@ _CONFIGSPEECH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=87,
-  serialized_end=261,
+  serialized_start=102,
+  serialized_end=276,
 )
 
 
@@ -203,6 +210,13 @@ _RESPONSESTREAM = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='token', full_name='proxyASR.ResponseStream.token', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -215,8 +229,8 @@ _RESPONSESTREAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=263,
-  serialized_end=350,
+  serialized_start=278,
+  serialized_end=380,
 )
 
 DESCRIPTOR.message_types_by_name['StreamChunk'] = _STREAMCHUNK

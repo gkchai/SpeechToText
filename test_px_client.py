@@ -11,6 +11,7 @@ import json
 import pprint
 from blessings import Terminal
 import pdb
+import uuid
 
 _TIMEOUT_SECONDS = 10
 _TIMEOUT_SECONDS_STREAM = 100 	# timeout for streaming must be for entire stream
@@ -32,7 +33,9 @@ class Sender:
 							continuous = self.settings['continuous']
 						)
 		configResponse = service.DoConfig(configParams, _TIMEOUT_SECONDS)
-		return configResponse.status
+		# we create a random token which is used for streaming
+		new_token = str(uuid.uuid1())
+		return configResponse.status, new_token
 
 	def printMultiple(self, response_dict, term):
 
@@ -48,11 +51,11 @@ class Sender:
 			else:
 				print (response_dict['transcript'])
 
-	def clientChunkStream(self, service, filename, chunkSize=1024):
+	def clientChunkStream(self, service, filename, token, chunkSize=1024):
 		""" send stream of chunks contaning audio bytes """
 
-		responses = service.DoChunkStream(utils.generate_chunks(filename, grpc_on=True,
-			chunkSize=chunkSize), _TIMEOUT_SECONDS_STREAM)
+		responses = service.DoChunkStream(utils.generate_chunks(filename, token,
+			grpc_on=True, chunkSize=chunkSize), _TIMEOUT_SECONDS_STREAM)
 
 		# clear terminal space for printing
 		term = Terminal()
@@ -62,7 +65,6 @@ class Sender:
 			with term.location(0, rows_pos[ix]):
 				print ('############### %s ASR ################'%(asr))
 
-		trans = {}
 		for response in responses:
 			response_dict = {'asr': response.asr,
 							  'transcript': response.transcript,
@@ -70,42 +72,16 @@ class Sender:
 
 	  		# continuously refresh and print
 			self.printMultiple(response_dict, term)
-			trans[response.asr] = response.transcript
 
 		print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-		print('\n+++++++++++++++++++ Assistant ++++++++++++++++++++++++\n')
 
-
-		#### Multi-assistant API
-		import requests
-		url = 'http://52.91.17.237:8050/assistant'
-		query = {
-		"helpers": [
-					"hound",
-					# "ibm",
-					# "apiai",
-					"google_knowledge",
-					"google_search"
-					# "alexa"
-				],
-		"text": trans['google'],
-		"context": {
-						"loc":[41.8781, -87.6298],
-						"city": "chicago"
-					}
-		}
-		headers = {'Content-type': 'application/json',  'Accept': 'text/plain'}
-		response = requests.post(url, json=query, headers=headers)
-		pprint.pprint(response.json())
-
-		print('\n++++++++++++++++++++++++++++++++++++++++++++++++++++++\n')
 
 
 
 	def createService(self, port):
-		channel = implementations.insecure_channel('localhost', port) # local
+		# channel = implementations.insecure_channel('localhost', port) # local
 		# channel = implementations.insecure_channel('10.37.163.202', port) # lenovo server
-		# channel = implementations.insecure_channel('52.91.17.237', port) # aws
+		channel = implementations.insecure_channel('52.91.17.237', port) # aws
 		return px_pb2.beta_create_Listener_stub(channel)
 
 
@@ -121,5 +97,5 @@ if __name__ == '__main__':
 
 	senderObj = Sender(settings)
 	service = senderObj.createService(args.port)
-	senderObj.configService(service)
-	senderObj.clientChunkStream(service, args.filename, 3072)
+	status, token = senderObj.configService(service)
+	senderObj.clientChunkStream(service, args.filename, token, 3072)

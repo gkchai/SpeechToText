@@ -11,6 +11,7 @@ service Listener {
 // audio chunk
 message StreamChunk {
   bytes content = 1;
+  string token = 2;
 }
 
 // config result
@@ -36,4 +37,5 @@ message ResponseStream {
 	string transcript = 2;
 	bool is_final = 3;
 	float confidence = 4;
+	string token = 5;
 }
