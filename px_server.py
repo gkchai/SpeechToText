@@ -43,7 +43,6 @@ class IterableQueue():
 		else:
 			return True
 
-
 	def next(self):
 		item = self.Q.get()
 		if self._predicate(item):
@@ -61,8 +60,6 @@ class Listener(px_pb2.BetaListenerServicer):
 
 	def __init__(self):
 		""" put initializaiton code e.g. db access """
-		self.config = {}
-		self.config_set = False
 		with open(_LOG_FILE) as f:
 			self.db = json.load(f)
 		logger.debug('PX_server initialized')
@@ -71,13 +68,11 @@ class Listener(px_pb2.BetaListenerServicer):
 		with open(_LOG_FILE, 'w') as f:
 			json.dump(self.db, f,  sort_keys=True, indent=4)
 
-	def _splitStream(self, request_iterator, listQueues, get_token):
+	def _splitStream(self, request_iterator, listQueues):
 
 		for chunk in request_iterator:
 			for Q in listQueues:
 				Q.put(chunk.content)
-				if len(get_token) == 0:
-					get_token.append(chunk.token)
 			# print(len(chunk.content))
 		for Q in listQueues:
 			Q.put('EOS')
@@ -94,74 +89,93 @@ class Listener(px_pb2.BetaListenerServicer):
 
 	def DoConfig(self, request, context):
 
-		self.asrs = request.asr
-		if set(self.asrs) > set(_SUPPORTED_ASR):
+		if set(request.asr) > set(_SUPPORTED_ASR):
 			raise Exception("ASR not supported")
 
-		self.config['encoding'] = request.encoding
-		self.config['rate'] = request.rate
-		self.config['language'] = request.language
-		self.config['max_alternatives'] = request.max_alternatives
-		self.config['profanity_filter'] = request.profanity_filter
-		self.config['interim_results'] = request.interim_results
-		self.config['continuous'] = request.continuous
-		self.config_set = True
-		logger.debug('ProxyASR configuration done')
-		return px_pb2.ConfigResult(status=True)
 
+		if request.encoding != 'LINEAR16':
+			raise Exception("encoding not supported")
+
+		if request.rate != 16000:
+			raise Exception("Rate not supported")
+
+		logger.debug('ProxyASR configuration done')
+		return px_pb2.ConfigResult(status=True,
+			streamingConfig=px_pb2.ConfigSpeech(
+				asr = request.asr,
+				encoding = request.encoding,
+				rate = request.rate,
+				language = request.language,
+				max_alternatives = request.max_alternatives,
+				profanity_filter=request.profanity_filter,
+				interim_results=request.interim_results,
+				continuous=request.continuous
+				)
+			)
 
 	def DoChunkStream(self, request_iterator, context):
 
-		if not self.config_set:
-			raise Exception("Configuration not set")
+		# first item in iterator has the config and token
+		first_item = next(request_iterator)
+
+		if not (first_item.token) or not (first_item.streamingConfig):
+			raise Exception("First callback must pass configuration and token")
+
+		token = first_item.token
+		config = {}
+		config['asrs'] = first_item.streamingConfig.asr
+		config['encoding'] = first_item.streamingConfig.encoding
+		config['rate'] = first_item.streamingConfig.rate
+		config['language'] = first_item.streamingConfig.language
+		config['max_alternatives'] = first_item.streamingConfig.max_alternatives
+		config['profanity_filter'] = first_item.streamingConfig.profanity_filter
+		config['interim_results'] = first_item.streamingConfig.interim_results
+		config['continuous'] = first_item.streamingConfig.continuous
 
 		asr_id = str(uuid.uuid1())
-		print "Request-id: %s"%asr_id
 		self.db[asr_id] = {}
 
 		logger.debug('%s: ProxyASR doing chunk stream', asr_id)
 
 		all_queues = []
-		for _ in range(len(self.asrs)):
+		for _ in range(len(config['asrs'])):
 			all_queues.append(Queue.Queue())
 
 		# log queue
 		all_queues.append(Queue.Queue())
 
-		get_token = []
-
-		thread.start_new_thread(self._splitStream, (request_iterator, all_queues, get_token))
+		thread.start_new_thread(self._splitStream, (request_iterator, all_queues))
 		thread.start_new_thread(LogStream, (iter(all_queues[-1].get, 'EOS'), asr_id))
 
 		responseQueue = Queue.Queue()
-		for ix, asr in enumerate(self.asrs):
+		for ix, asr in enumerate(config['asrs']):
 			if asr == 'google':
 				gw = google.worker(asr_id)
 				thread.start_new_thread(self._mergeStream,
-					(gw.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+					(gw.stream(iter(all_queues[ix].get, 'EOS'), config),
 						responseQueue, asr))
 			if asr == 'ibm':
 				thread.start_new_thread(self._mergeStream,
-					(ibm.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+					(ibm.stream(iter(all_queues[ix].get, 'EOS'), config),
 						responseQueue, asr))
 			if asr == 'hound':
 				thread.start_new_thread(self._mergeStream,
-					(hound.stream(iter(all_queues[ix].get, 'EOS'), self.config),
+					(hound.stream(iter(all_queues[ix].get, 'EOS'), config),
 						responseQueue, asr))
 
 
-		for item_json in IterableQueue(responseQueue, len(self.asrs)):
+		for item_json in IterableQueue(responseQueue, len(config['asrs'])):
 			if item_json != 'DONE':
 				if item_json['is_final']:
 					self.db[asr_id][item_json['asr']] = json.dumps(item_json)
-					self.db[asr_id]['token'] = get_token[0]
+					self.db[asr_id]['token'] = token
 					self._write(self.db)
 
 				yield px_pb2.ResponseStream(asr = item_json['asr'],
 					transcript = item_json['transcript'],
 					is_final = item_json['is_final'],
 					confidence = 1.0,
-					token = get_token[0])
+					)
 
 
 def serve(port):

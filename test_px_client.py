@@ -35,7 +35,7 @@ class Sender:
 		configResponse = service.DoConfig(configParams, _TIMEOUT_SECONDS)
 		# we create a random token which is used for streaming
 		new_token = str(uuid.uuid1())
-		return configResponse.status, new_token
+		return configResponse.streamingConfig, new_token
 
 	def printMultiple(self, response_dict, term):
 
@@ -51,11 +51,17 @@ class Sender:
 			else:
 				print (response_dict['transcript'])
 
-	def clientChunkStream(self, service, filename, token, chunkSize=1024):
+	def clientChunkStream(self, service, filename, token, config, chunkSize=1024):
 		""" send stream of chunks contaning audio bytes """
 
-		responses = service.DoChunkStream(utils.generate_chunks(filename, token,
-			grpc_on=True, chunkSize=chunkSize), _TIMEOUT_SECONDS_STREAM)
+		def request_stream():
+
+			yield px_pb2.StreamChunk(token=token, streamingConfig=config)
+			for item in utils.generate_chunks(filename, grpc_on=True, chunkSize=chunkSize):
+				yield item
+
+
+		responses = service.DoChunkStream(request_stream(), _TIMEOUT_SECONDS_STREAM)
 
 		# clear terminal space for printing
 		term = Terminal()
@@ -76,12 +82,10 @@ class Sender:
 		print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 
 
-
-
 	def createService(self, port):
-		# channel = implementations.insecure_channel('localhost', port) # local
+		channel = implementations.insecure_channel('localhost', port) # local
 		# channel = implementations.insecure_channel('10.37.163.202', port) # lenovo server
-		channel = implementations.insecure_channel('52.91.17.237', port) # aws
+		# channel = implementations.insecure_channel('52.91.17.237', port) # aws
 		return px_pb2.beta_create_Listener_stub(channel)
 
 
@@ -97,5 +101,5 @@ if __name__ == '__main__':
 
 	senderObj = Sender(settings)
 	service = senderObj.createService(args.port)
-	status, token = senderObj.configService(service)
-	senderObj.clientChunkStream(service, args.filename, token, 3072)
+	streamingconfig, token = senderObj.configService(service)
+	senderObj.clientChunkStream(service, args.filename, token, streamingconfig, 3072)

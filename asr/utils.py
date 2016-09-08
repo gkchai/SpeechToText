@@ -7,7 +7,7 @@ import wave
 
 
 # create an iterator that yields chunks in raw or grpc format
-def generate_chunks(filename, token, grpc_on=False, chunkSize=3072):
+def generate_chunks(filename, grpc_on=False, chunkSize=3072):
 	#raw byte file
 	if '.raw' in filename:
 		f = open(filename, 'rb')
@@ -15,7 +15,7 @@ def generate_chunks(filename, token, grpc_on=False, chunkSize=3072):
 			chunk = f.read(chunkSize)
 			if chunk:
 				if grpc_on:
-					yield px_pb2.StreamChunk(content=chunk, token=token)
+					yield px_pb2.StreamChunk(content=chunk)
 				else:
 					# print len(chunk)
 					yield chunk
@@ -30,7 +30,7 @@ def generate_chunks(filename, token, grpc_on=False, chunkSize=3072):
 			if chunk:
 				# print len(chunk)
 				if grpc_on:
-					yield px_pb2.StreamChunk(content=chunk, token=token)
+					yield px_pb2.StreamChunk(content=chunk)
 				else:
 					yield chunk
 			else:
@@ -54,7 +54,7 @@ def generate_chunks(filename, token, grpc_on=False, chunkSize=3072):
 			if chunk:
 				# print len(chunk)
 				if grpc_on:
-					yield px_pb2.StreamChunk(content=chunk, token=token)
+					yield px_pb2.StreamChunk(content=chunk)
 				else:
 					yield chunk
 			else:
