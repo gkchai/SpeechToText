@@ -101,17 +101,7 @@ class Listener(px_pb2.BetaListenerServicer):
 
 		logger.debug('ProxyASR configuration done')
 		return px_pb2.ConfigResult(status=True,
-			streamingConfig=px_pb2.ConfigSpeech(
-				asr = request.asr,
-				encoding = request.encoding,
-				rate = request.rate,
-				language = request.language,
-				max_alternatives = request.max_alternatives,
-				profanity_filter=request.profanity_filter,
-				interim_results=request.interim_results,
-				continuous=request.continuous
-				)
-			)
+			streamingConfig=request)
 
 	def DoChunkStream(self, request_iterator, context):
 

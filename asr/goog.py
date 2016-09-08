@@ -79,7 +79,7 @@ class worker:
 			service = cloud_speech.beta_create_Speech_stub(
 				self.make_channel('speech.googleapis.com', 443))
 
-			logger.info("%s: google initialization done", self.request_id)
+			logger.info("google initialization done")
 			responses = service.StreamingRecognize(self.request_stream(chunkIterator, config),
 						DEADLINE_SECS)
 

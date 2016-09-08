@@ -54,8 +54,10 @@ class Sender:
 	def clientChunkStream(self, service, filename, token, config, chunkSize=1024):
 		""" send stream of chunks contaning audio bytes """
 
+		## flow: in the the first call to the server, pass on a token, and
+		## config that was returned after initial configuration. From second
+		## call and later, pass on the audio chunks
 		def request_stream():
-
 			yield px_pb2.StreamChunk(token=token, streamingConfig=config)
 			for item in utils.generate_chunks(filename, grpc_on=True, chunkSize=chunkSize):
 				yield item

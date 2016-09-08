@@ -58,6 +58,8 @@ class ASRClient(WebSocketClient):
         print "Closed down", code, reason
         if code != 2000:
             self.responseQueue.put('EOS')
+        logger.info('IBM fnished')
+
 
     def received_message(self, msg):
 
