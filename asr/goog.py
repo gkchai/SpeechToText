@@ -151,7 +151,7 @@ if __name__ == "__main__":
 	"continuous": False,
 	}
 
-	W = worker()
+	W = worker('123456')
 	responses = W.stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072),
 		config)
 	for response in responses:

@@ -122,7 +122,8 @@ class Listener(px_pb2.BetaListenerServicer):
 		config['interim_results'] = first_item.streamingConfig.interim_results
 		config['continuous'] = first_item.streamingConfig.continuous
 
-		asr_id = str(uuid.uuid1())
+		# asr_id = str(uuid.uuid1())
+		asr_id = token
 		self.db[asr_id] = {}
 
 		logger.debug('%s: ProxyASR doing chunk stream', asr_id)
