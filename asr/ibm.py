@@ -10,6 +10,9 @@ import thread
 import Queue
 import base64
 import utils
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # WebSocket client
 from ws4py.client.threadedclient import WebSocketClient
@@ -26,7 +29,7 @@ class ASRClient(WebSocketClient):
         self.contentType = contentType
         self.listeningMessages = 0
         WebSocketClient.__init__(self, url, headers=headers.items())
-
+        logger.info("IBM initialized")
 
     def opened(self):
         data = {"action" : "start", "content-type" : str(self.contentType),
@@ -37,10 +40,13 @@ class ASRClient(WebSocketClient):
 
         # send the initialization parameters
         self.send(json.dumps(data).encode('utf8'))
+        logger.info("IBM initialization parameters sent")
+
         def send_chunk():
             try:
                 for data in self.chunkIterator:
                     self.send(data, binary=True)
+                    logger.debug("Sending to IBM = %d", len(data))
                 self.send(b'', binary=True)
             except:
                 print "Abort sending. Closed called by server"
@@ -52,6 +58,8 @@ class ASRClient(WebSocketClient):
         print "Closed down", code, reason
         if code != 2000:
             self.responseQueue.put('EOS')
+        logger.info('IBM fnished')
+
 
     def received_message(self, msg):
 
@@ -71,6 +79,8 @@ class ASRClient(WebSocketClient):
             # empty hypothesis
             if (len(jsonObject['results']) == 0):
                 print "empty hypothesis!"
+                self.responseQueue.put('EOS')
+                self.close(2000)
             # regular hypothesis
             else:
                 jsonObject = json.loads(payload.decode('utf8'))
@@ -79,6 +89,7 @@ class ASRClient(WebSocketClient):
                 self.responseQueue.put(hypothesis)
                 if bFinal:
                     # print "got final", self.listeningMessages
+                    logger.info('IBM fnished')
                     self.responseQueue.put('EOS')
                     self.close(2000)
 

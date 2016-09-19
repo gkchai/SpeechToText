@@ -16,6 +16,9 @@ Preferred way is to do in virtualenv (Python 2.7).
 Run the following command in the terminal to set the Google ASR credential path
 `export GOOGLE_APPLICATION_CREDENTIALS=asr/google_key.json`
 
+## Create log directory
+Create `log` folder and `log/log.json` file with empty (`{}`) json contents.
+
 ## Start server
 Start the server on a given port. Running on ports below 1024 requires root privileges.
 `python px_server.py -p 8080`
@@ -40,5 +43,5 @@ Return type to the client  is a JSON string
 
 # Testing
 
-Individual ASR blocks (XXX = Google, IBM, Hound) can be tsted locally as follows:
+Individual ASR blocks (XXX = goog, ibm, hound) can be tsted locally as follows:
 `python -m asr.XXX -in example.raw`

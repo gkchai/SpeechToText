@@ -1,5 +1,5 @@
 gcloud==0.17.0
-grpcio==0.15.0
+grpcio==1.0.0
 grpc-google-cloud-speech-v1beta1==1.0.1
 grpcio-tools
 pyOpenSSL

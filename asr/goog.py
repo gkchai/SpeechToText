@@ -7,6 +7,10 @@ from grpc.beta import implementations
 import time, random
 import argparse
 import utils, sys
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 # Audio recording parameters
 RATE = 16000
@@ -19,8 +23,9 @@ SPEECH_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
 class worker:
 
-	def __init__(self):
+	def __init__(self, request_id):
 		self.got_end_audio = False
+		self.request_id = request_id
 
 	def make_channel(self, host, port):
 	    """Creates an SSL channel with auth credentials from the environment."""
@@ -44,7 +49,6 @@ class worker:
 
 	def request_stream(self, chunkIterator, config):
 
-		# print config
 		recognition_config = cloud_speech.RecognitionConfig(
 			encoding= config['encoding'], sample_rate=config['rate'],
 			max_alternatives=config['max_alternatives'],
@@ -57,7 +61,8 @@ class worker:
 		yield cloud_speech.StreamingRecognizeRequest(streaming_config=streaming_config)
 
 		for data in chunkIterator:
-			# Subsequent requests can all just have the content
+
+			logger.debug("%s: sending to google = %d", self.request_id, len(data))
 			if self.got_end_audio:
 				raise StopIteration
 			else:
@@ -73,6 +78,8 @@ class worker:
 		try:
 			service = cloud_speech.beta_create_Speech_stub(
 				self.make_channel('speech.googleapis.com', 443))
+
+			logger.info("google initialization done")
 			responses = service.StreamingRecognize(self.request_stream(chunkIterator, config),
 						DEADLINE_SECS)
 
@@ -114,7 +121,7 @@ class worker:
 
 					if response.results[0].is_final:
 						last_confidence = response.results[0].alternatives[0].confidence
-						raise
+						break
 					else:
 						yield {'transcript': last_transcript,
 							'is_final': False,
@@ -128,6 +135,7 @@ class worker:
 		finally:
 			yield {'transcript' : last_transcript, 'is_final': True,
 					'confidence': last_confidence}
+			logger.info('google finished')
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -143,7 +151,7 @@ if __name__ == "__main__":
 	"continuous": False,
 	}
 
-	W = worker()
+	W = worker('123456')
 	responses = W.stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072),
 		config)
 	for response in responses:

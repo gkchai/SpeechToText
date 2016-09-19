@@ -4,18 +4,8 @@ package proxyASR;
 
 // The Listener service definition.
 service Listener {
-  rpc DoChunkStream (stream StreamChunk) returns (stream ResponseStream) {}
   rpc DoConfig (ConfigSpeech) returns (ConfigResult) {}
-}
-
-// audio chunk
-message StreamChunk {
-  bytes content = 1;
-}
-
-// config result
-message ConfigResult {
-	bool status = 1;
+  rpc DoChunkStream (stream StreamChunk) returns (stream ResponseStream) {}
 }
 
 // speech config (fields are optional by default in proto3)
@@ -30,6 +20,21 @@ message ConfigSpeech {
 	bool continuous = 8;
 }
 
+// config result
+message ConfigResult {
+	bool status = 1;
+	ConfigSpeech streamingConfig = 2;
+}
+
+
+// audio chunk
+message StreamChunk {
+  bytes content = 1;
+  string token = 2;
+  ConfigSpeech streamingConfig = 3;
+}
+
+
 // response
 message ResponseStream {
 	string asr = 1;
@@ -37,3 +42,4 @@ message ResponseStream {
 	bool is_final = 3;
 	float confidence = 4;
 }
+
