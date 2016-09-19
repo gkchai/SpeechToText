@@ -92,7 +92,6 @@ class Listener(px_pb2.BetaListenerServicer):
 		if set(request.asr) > set(_SUPPORTED_ASR):
 			raise Exception("ASR not supported")
 
-
 		if request.encoding != 'LINEAR16':
 			raise Exception("encoding not supported")
 
