@@ -49,13 +49,13 @@ class ASRClient(WebSocketClient):
                     logger.debug("Sending to IBM = %d", len(data))
                 self.send(b'', binary=True)
             except:
-                print "Abort sending. Closed called by server"
+                logger.info("Abort sending. Closed called by server")
 
         t = threading.Thread(target=send_chunk)
         t.start()
 
     def closed(self, code, reason=None):
-        print "Closed down", code, reason
+        logger.info("Closed down %s %s", code, reason)
         if code != 2000:
             self.responseQueue.put('EOS')
         logger.info('IBM fnished')
@@ -78,7 +78,7 @@ class ASRClient(WebSocketClient):
 
             # empty hypothesis
             if (len(jsonObject['results']) == 0):
-                print "empty hypothesis!"
+                logger.error( "empty hypothesis!")
                 self.responseQueue.put('EOS')
                 self.close(2000)
             # regular hypothesis

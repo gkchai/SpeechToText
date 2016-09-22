@@ -22,7 +22,7 @@ import argparse
 import os
 import logging
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('proxy_asr')
 
 _SUPPORTED_ASR = ["google", "hound", "ibm"]
 _LOG_PATH = 'log/'
