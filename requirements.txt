@@ -8,3 +8,4 @@ ws4py
 blessings
 tornado
 requests
+pymongo

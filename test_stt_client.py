@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import asr.utils as utils
-from proto import px_pb2
+from proto import stt_pb2
 from grpc.beta import implementations
 import argparse
 import random
@@ -22,10 +22,10 @@ class Sender:
 		self.settings = settings
 
 	def configService(self, service):
-		""" Configure ASR service with requested paramters """
-		configParams = px_pb2.ConfigSpeech(
-							asr = self.settings['asr'],
-							rate = self.settings['rate'],
+		""" Configure STT service with requested paramters """
+		configParams = stt_pb2.ConfigSTT(
+							asrs = self.settings['asrs'],
+							sampling_rate = self.settings['sampling_rate'],
 							language = self.settings['language'],
 							encoding = self.settings['encoding'],
 							max_alternatives = self.settings['max_alternatives'],
@@ -35,12 +35,12 @@ class Sender:
 		configResponse = service.DoConfig(configParams, _TIMEOUT_SECONDS)
 		# we create a random token which is used for streaming
 		new_token = str(uuid.uuid1())
-		return configResponse.streamingConfig, new_token
+		return configResponse.config, new_token
 
 	def printMultiple(self, response_dict, term):
 
 		rows_pos = [3, 7, 11]
-		row_pos = rows_pos[self.settings['asr'].index(response_dict['asr'])]
+		row_pos = rows_pos[self.settings['asrs'].index(response_dict['asr'])]
 		# print (response_dict['str'])
 
 		with term.location(0, row_pos):
@@ -58,18 +58,18 @@ class Sender:
 		## config that was returned after initial configuration. From second
 		## call and later, pass on the audio chunks
 		def request_stream():
-			yield px_pb2.StreamChunk(token=token, streamingConfig=config)
+			yield stt_pb2.SpeechChunk(token=token, config=config)
 			for item in utils.generate_chunks(filename, grpc_on=True, chunkSize=chunkSize):
 				yield item
 
 
-		responses = service.DoChunkStream(request_stream(), _TIMEOUT_SECONDS_STREAM)
+		responses = service.DoSpeechToText(request_stream(), _TIMEOUT_SECONDS_STREAM)
 
 		# clear terminal space for printing
 		term = Terminal()
 		print(term.clear)
 		rows_pos = [2, 6, 10]
-		for ix, asr in enumerate(self.settings['asr']):
+		for ix, asr in enumerate(self.settings['asrs']):
 			with term.location(0, rows_pos[ix]):
 				print ('############### %s ASR ################'%(asr))
 
@@ -88,12 +88,12 @@ class Sender:
 		channel = implementations.insecure_channel('localhost', port) # local
 		# channel = implementations.insecure_channel('10.37.163.202', port) # lenovo server
 		# channel = implementations.insecure_channel('52.91.17.237', port) # aws
-		return px_pb2.beta_create_Listener_stub(channel)
+		return stt_pb2.beta_create_Listener_stub(channel)
 
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser(description='Client to test the proxy ASR service')
+	parser = argparse.ArgumentParser(description='Client to test the STT service')
 	parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
 	parser.add_argument('-p', action='store', type=int, dest='port', default=8080, help='port')
 	args = parser.parse_args()

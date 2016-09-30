@@ -22,7 +22,7 @@ class ResponseListener(houndify.HoundListener):
     def onFinalResponse(self, response):
         # self.responseQueue.put(response)
         self.responseQueue.put('EOS')
-        logger.info("Hound finished ")
+        # logger.info("Hound finished ")
     def onTranslatedResponse(self, response):
         print "Translated response: " + response
     def onError(self, err):
@@ -50,31 +50,41 @@ def request_stream(client, chunkIterator, responseQueue):
         responseQueue.put('EOS')
         return
 
-def stream(chunkIterator, config=None):
 
-    last_transcript = ''
-    try:
-        creds = credentials()
-        client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'],
-            "asr_user")
-        client.setSampleRate(16000)
-        client.setLocation(37.388309, -121.973968)
 
-        responseQueue = Queue.Queue()
-        client.start(ResponseListener(responseQueue))
-        logger.info("Hound Initialized")
-        thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
+class worker:
 
-        responseIterator =  iter(responseQueue.get, 'EOS')
-        for response in responseIterator:
-            last_transcript = response
-            yield {'transcript' : last_transcript, 'is_final': False, 'confidence': -1}
+    def __init__(self, token):
+        self.token = token
 
-    except:
-        e = sys.exc_info()[0]
-        print >> sys.stderr, "hound connection error", e
-    finally:
-        yield {'transcript' : last_transcript, 'is_final': True, 'confidence': 1}
+
+    def stream(self, chunkIterator, config=None):
+
+        last_transcript = ''
+        try:
+            creds = credentials()
+            client = houndify.StreamingHoundClient(creds['CLIENT_ID'], creds['CLIENT_KEY'],
+                "asr_user")
+            client.setSampleRate(16000)
+            client.setLocation(37.388309, -121.973968)
+
+            responseQueue = Queue.Queue()
+            client.start(ResponseListener(responseQueue))
+            logger.info("%s: Initialized", self.token)
+            thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
+
+            responseIterator =  iter(responseQueue.get, 'EOS')
+            for response in responseIterator:
+                last_transcript = response
+                yield {'transcript' : last_transcript, 'is_final': False, 'confidence': -1}
+
+        except:
+            e = sys.exc_info()[0]
+            logger.error('%s: %s connection error', self.token, e)
+        finally:
+            yield {'transcript' : last_transcript, 'is_final': True, 'confidence': 1}
+            logger.info('%s: finished', self.token)
+
 
 
 if __name__ == '__main__':
@@ -82,7 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw',
         help='audio file')
     args = parser.parse_args()
-
-    responses = stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072))
+    W = worker('123456')
+    responses = W.stream(utils.generate_chunks(args.filename, grpc_on=False, chunkSize=3072))
     for response in responses:
         print response

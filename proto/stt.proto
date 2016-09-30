@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package proxyASR;
+package SplitSys_SpeechToText;
 
 // The Listener service definition.
 service Listener {
-  rpc DoConfig (ConfigSpeech) returns (ConfigResult) {}
-  rpc DoChunkStream (stream StreamChunk) returns (stream ResponseStream) {}
+  rpc DoConfig (ConfigSTT) returns (ConfigResult) {}
+  rpc DoSpeechToText (stream SpeechChunk) returns (stream TranscriptChunk) {}
 }
 
 // speech config (fields are optional by default in proto3)
-message ConfigSpeech {
-	repeated string asr = 1;
+message ConfigSTT {
+	repeated string asrs = 1;
 	string encoding = 2;
-	int32 rate = 3;
+	int32 sampling_rate = 3;
 	string language = 4;
 	int32 max_alternatives = 5;
 	bool profanity_filter = 6;
@@ -23,20 +23,20 @@ message ConfigSpeech {
 // config result
 message ConfigResult {
 	bool status = 1;
-	ConfigSpeech streamingConfig = 2;
+	ConfigSTT config = 2;
 }
 
 
 // audio chunk
-message StreamChunk {
+message SpeechChunk {
   bytes content = 1;
   string token = 2;
-  ConfigSpeech streamingConfig = 3;
+  ConfigSTT config = 3;
 }
 
 
 // response
-message ResponseStream {
+message TranscriptChunk {
 	string asr = 1;
 	string transcript = 2;
 	bool is_final = 3;

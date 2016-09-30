@@ -23,9 +23,9 @@ SPEECH_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
 class worker:
 
-	def __init__(self, request_id):
+	def __init__(self, token):
 		self.got_end_audio = False
-		self.request_id = request_id
+		self.token = token
 
 	def make_channel(self, host, port):
 	    """Creates an SSL channel with auth credentials from the environment."""
@@ -50,7 +50,7 @@ class worker:
 	def request_stream(self, chunkIterator, config):
 
 		recognition_config = cloud_speech.RecognitionConfig(
-			encoding= config['encoding'], sample_rate=config['rate'],
+			encoding= config['encoding'], sample_rate=config['sampling_rate'],
 			max_alternatives=config['max_alternatives'],
 			language_code = config['language'])
 
@@ -62,7 +62,7 @@ class worker:
 
 		for data in chunkIterator:
 
-			logger.debug("%s: sending to google = %d", self.request_id, len(data))
+			logger.debug("%s: sending to google = %d", self.token, len(data))
 			if self.got_end_audio:
 				raise StopIteration
 			else:
@@ -79,7 +79,7 @@ class worker:
 			service = cloud_speech.beta_create_Speech_stub(
 				self.make_channel('speech.googleapis.com', 443))
 
-			logger.info("google initialization done")
+			logger.info("%s: Initialized", self.token)
 			responses = service.StreamingRecognize(self.request_stream(chunkIterator, config),
 						DEADLINE_SECS)
 
@@ -130,12 +130,12 @@ class worker:
 
 		except:
 			e = sys.exc_info()[0]
-			print >> sys.stderr, "google connection error", e
+			logger.error('%s: %s connection error', self.token, e)
 
 		finally:
 			yield {'transcript' : last_transcript, 'is_final': True,
 					'confidence': last_confidence}
-			logger.info('google finished')
+			logger.info('%s: finished', self.token)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()

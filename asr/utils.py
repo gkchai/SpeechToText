@@ -1,7 +1,7 @@
 """ Common utlities """
 
 import sys
-import proto.px_pb2 as px_pb2
+import proto.stt_pb2 as stt_pb2
 import time
 import wave
 
@@ -15,7 +15,7 @@ def generate_chunks(filename, grpc_on=False, chunkSize=3072):
 			chunk = f.read(chunkSize)
 			if chunk:
 				if grpc_on:
-					yield px_pb2.StreamChunk(content=chunk)
+					yield stt_pb2.SpeechChunk(content=chunk)
 				else:
 					# print len(chunk)
 					yield chunk
@@ -30,7 +30,7 @@ def generate_chunks(filename, grpc_on=False, chunkSize=3072):
 			if chunk:
 				# print len(chunk)
 				if grpc_on:
-					yield px_pb2.StreamChunk(content=chunk)
+					yield stt_pb2.SpeechChunk(content=chunk)
 				else:
 					yield chunk
 			else:
@@ -54,7 +54,7 @@ def generate_chunks(filename, grpc_on=False, chunkSize=3072):
 			if chunk:
 				# print len(chunk)
 				if grpc_on:
-					yield px_pb2.StreamChunk(content=chunk)
+					yield stt_pb2.SpeechChunk(content=chunk)
 				else:
 					yield chunk
 			else:

@@ -1,5 +1,6 @@
 # About
-Bi-directional streaming ASR service that proxies existing ASRs such as Google Speech, IBM Bluemix speech, Hound ASR etc.
+Bi-directional streaming speech-to-text (STT or ASR) service that proxies existing ASRs such
+as Google Cloud Speech, IBM Bluemix STT speech and Hound STT
 
 # Install dependicies
 Preferred way is to do in virtualenv (Python 2.7).
@@ -16,12 +17,15 @@ Preferred way is to do in virtualenv (Python 2.7).
 Run the following command in the terminal to set the Google ASR credential path
 `export GOOGLE_APPLICATION_CREDENTIALS=asr/google_key.json`
 
+## Database
+Uses MongoDB, if not present, then uses local `log` directory.
+
 ## Create log directory
 Create `log` folder and `log/log.json` file with empty (`{}`) json contents.
 
 ## Start server
 Start the server on a given port. Running on ports below 1024 requires root privileges.
-`python px_server.py -p 8080`
+`python stt_server.py -p 8080`
 
 # Proxy Client
 
@@ -29,17 +33,20 @@ Start the server on a given port. Running on ports below 1024 requires root priv
 Edit `settings.json` to specify the ASR settings.
 
 ## Stream from recorded file
-`python test_px_client.py -p 8080 -in example.raw`
-`python test_px_client.py -p 8080 -in example.wav`
+`python test_stt_client.py -p 8080 -in example.raw`
+`python test_stt_client.py -p 8080 -in example.wav`
 
 ## Stream from microphone
 Assumes rec and sox are installed. Available at http://sox.sourceforge.net/
-`rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_px_client.py -p 8080 -in stdin`
+`rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_stt_client.py -p 8080 -in stdin`
 
 ## Response format
 Return type to the client  is a JSON string
-`{"asr": "google", "transcript": "several tornadoes touch down in"
-  "is_final": False}`
+`{
+	"asr": "google",
+	"transcript": "several tornadoes touch down in"
+	"is_final": False
+  }`
 
 # Testing
 

@@ -29,7 +29,7 @@ class ASRClient(WebSocketClient):
         self.contentType = contentType
         self.listeningMessages = 0
         WebSocketClient.__init__(self, url, headers=headers.items())
-        logger.info("IBM initialized")
+        logger.debug("IBM initialized")
 
     def opened(self):
         data = {"action" : "start", "content-type" : str(self.contentType),
@@ -40,7 +40,7 @@ class ASRClient(WebSocketClient):
 
         # send the initialization parameters
         self.send(json.dumps(data).encode('utf8'))
-        logger.info("IBM initialization parameters sent")
+        logger.debug("IBM initialization parameters sent")
 
         def send_chunk():
             try:
@@ -55,10 +55,10 @@ class ASRClient(WebSocketClient):
         t.start()
 
     def closed(self, code, reason=None):
-        logger.info("Closed down %s %s", code, reason)
+        logger.debug("Closed down %s %s", code, reason)
         if code != 2000:
             self.responseQueue.put('EOS')
-        logger.info('IBM fnished')
+        # logger.info('IBM fnished')
 
 
     def received_message(self, msg):
@@ -89,43 +89,53 @@ class ASRClient(WebSocketClient):
                 self.responseQueue.put(hypothesis)
                 if bFinal:
                     # print "got final", self.listeningMessages
-                    logger.info('IBM fnished')
+                    logger.debug('IBM fnished')
                     self.responseQueue.put('EOS')
                     self.close(2000)
 
-def stream(chunkIterator, config=None):
 
-    # parse command line parameters
-    contentType = 'audio/l16; rate=16000'
-    model = 'en-US_BroadbandModel'
-    optOut = False
+class worker:
 
-    hostname = "stream.watsonplatform.net"
-    headers = {}
-    if (optOut == True):
-        headers['X-WDC-PL-OPT-OUT'] = '1'
+    def __init__(self, token):
+        self.token = token
 
-    creds = get_credentials()
-    string = creds['username'] + ":" + creds['password']
-    headers["Authorization"] = "Basic " + base64.b64encode(string)
 
-    url = "wss://" + hostname + "/speech-to-text/api/v1/recognize?model=" + model
+    def stream(self, chunkIterator, config=None):
 
-    responseQueue = Queue.Queue()
+        # parse command line parameters
+        contentType = 'audio/l16; rate=16000'
+        model = 'en-US_BroadbandModel'
+        optOut = False
 
-    last_transcript = ''
-    try:
-        client = ASRClient(url, headers, chunkIterator, responseQueue, contentType)
-        client.connect()
-        responseIterator =  iter(responseQueue.get, 'EOS')
-        for response in responseIterator:
-            last_transcript = response
-            yield {'transcript' : last_transcript, 'is_final': False}
-    except:
-        e = sys.exc_info()[0]
-        print >> sys.stderr, "ibm connection error", e
-    finally:
-        yield {'transcript' : last_transcript, 'is_final': True}
+        hostname = "stream.watsonplatform.net"
+        headers = {}
+        if (optOut == True):
+            headers['X-WDC-PL-OPT-OUT'] = '1'
+
+        creds = get_credentials()
+        string = creds['username'] + ":" + creds['password']
+        headers["Authorization"] = "Basic " + base64.b64encode(string)
+
+        url = "wss://" + hostname + "/speech-to-text/api/v1/recognize?model=" + model
+
+        responseQueue = Queue.Queue()
+
+        last_transcript = ''
+        try:
+            client = ASRClient(url, headers, chunkIterator, responseQueue, contentType)
+            client.connect()
+            logger.info("%s: Initialized", self.token)
+            responseIterator =  iter(responseQueue.get, 'EOS')
+            for response in responseIterator:
+                last_transcript = response
+                yield {'transcript' : last_transcript, 'is_final': False}
+        except:
+            e = sys.exc_info()[0]
+            logger.error('%s: %s connection error', self.token, e)
+        finally:
+            yield {'transcript' : last_transcript, 'is_final': True}
+            logger.info('%s: finished', self.token)
+
 
 if __name__ == '__main__':
 
@@ -136,7 +146,8 @@ if __name__ == '__main__':
    parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
    args = parser.parse_args()
 
-   responses = stream(utils.generate_chunks(args.filename, grpc_on=False,
+   W = worker('123456')
+   responses = W.stream(utils.generate_chunks(args.filename, grpc_on=False,
        chunkSize=3072))
    for response in responses:
      print response
