@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Client to test the STT service')
 	parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
-	parser.add_argument('-p', action='store', type=int, dest='port', default=8080, help='port')
+	parser.add_argument('-p', action='store', type=int, dest='port', default=9080, help='port')
 	args = parser.parse_args()
 
 	with open('settings.json') as f:

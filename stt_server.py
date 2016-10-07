@@ -19,7 +19,7 @@ import time
 import pymongo
 
 import argparse
-import os
+import sys
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('SpeechToText')
@@ -236,7 +236,11 @@ class Listener(stt_pb2.BetaListenerServicer):
 					)
 
 		# all asrs are DONE; write record to database
-		self._write_to_database(record)
+		try:
+			self._write_to_database(record)
+		except:
+			e = sys.exc_info()[0]
+			logger.error('%s: Database error: %s', token, e)
 
 
 def serve(port):
@@ -251,7 +255,7 @@ def serve(port):
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='SpeechToText service')
-	parser.add_argument('-p', action='store', dest='port', type=int, default=8080,
+	parser.add_argument('-p', action='store', dest='port', type=int, default=9080,
 		help='port')
 	args = parser.parse_args()
 	serve(args.port)

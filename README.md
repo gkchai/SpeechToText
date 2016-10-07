@@ -9,7 +9,7 @@ Preferred way is to do in virtualenv (Python 2.7).
 
 # Compile .proto
 `cd proto`
-`python -m grpc.tools.protoc -I . --python_out=. --grpc_python_out=. px.proto`
+`python -m grpc.tools.protoc -I . --python_out=. --grpc_python_out=. stt.proto`
 
 # Proxy server
 
@@ -25,7 +25,7 @@ Create `log` folder and `log/log.json` file with empty (`{}`) json contents.
 
 ## Start server
 Start the server on a given port. Running on ports below 1024 requires root privileges.
-`python stt_server.py -p 8080`
+`python stt_server.py -p 9080`
 
 # Proxy Client
 
@@ -33,12 +33,12 @@ Start the server on a given port. Running on ports below 1024 requires root priv
 Edit `settings.json` to specify the ASR settings.
 
 ## Stream from recorded file
-`python test_stt_client.py -p 8080 -in example.raw`
-`python test_stt_client.py -p 8080 -in example.wav`
+`python test_stt_client.py -p 9080 -in example.raw`
+`python test_stt_client.py -p 9080 -in example.wav`
 
 ## Stream from microphone
 Assumes rec and sox are installed. Available at http://sox.sourceforge.net/
-`rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_stt_client.py -p 8080 -in stdin`
+`rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_stt_client.py -p 9080 -in stdin`
 
 ## Response format
 Return type to the client  is a JSON string
