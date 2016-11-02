@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='stt.proto',
   package='SplitSys_SpeechToText',
   syntax='proto3',
-  serialized_pb=_b('\n\tstt.proto\x12\x15SplitSys_SpeechToText\"\xb5\x01\n\tConfigSTT\x12\x0c\n\x04\x61srs\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x15\n\rsampling_rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\"P\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x30\n\x06\x63onfig\x18\x02 \x01(\x0b\x32 .SplitSys_SpeechToText.ConfigSTT\"_\n\x0bSpeechChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\x12\r\n\x05token\x18\x02 \x01(\t\x12\x30\n\x06\x63onfig\x18\x03 \x01(\x0b\x32 .SplitSys_SpeechToText.ConfigSTT\"X\n\x0fTranscriptChunk\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\xc3\x01\n\x08Listener\x12S\n\x08\x44oConfig\x12 .SplitSys_SpeechToText.ConfigSTT\x1a#.SplitSys_SpeechToText.ConfigResult\"\x00\x12\x62\n\x0e\x44oSpeechToText\x12\".SplitSys_SpeechToText.SpeechChunk\x1a&.SplitSys_SpeechToText.TranscriptChunk\"\x00(\x01\x30\x01\x62\x06proto3')
+  serialized_pb=_b('\n\tstt.proto\x12\x15SplitSys_SpeechToText\"\xdc\x01\n\tConfigSTT\x12\x0c\n\x04\x61srs\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x15\n\rsampling_rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\x12\x11\n\tchunksize\x18\t \x01(\x05\x12\x12\n\ninactivity\x18\n \x01(\x05\"P\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x30\n\x06\x63onfig\x18\x02 \x01(\x0b\x32 .SplitSys_SpeechToText.ConfigSTT\"_\n\x0bSpeechChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\x12\r\n\x05token\x18\x02 \x01(\t\x12\x30\n\x06\x63onfig\x18\x03 \x01(\x0b\x32 .SplitSys_SpeechToText.ConfigSTT\"X\n\x0fTranscriptChunk\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\xc3\x01\n\x08Listener\x12S\n\x08\x44oConfig\x12 .SplitSys_SpeechToText.ConfigSTT\x1a#.SplitSys_SpeechToText.ConfigResult\"\x00\x12\x62\n\x0e\x44oSpeechToText\x12\".SplitSys_SpeechToText.SpeechChunk\x1a&.SplitSys_SpeechToText.TranscriptChunk\"\x00(\x01\x30\x01\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -89,6 +89,20 @@ _CONFIGSTT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='chunksize', full_name='SplitSys_SpeechToText.ConfigSTT.chunksize', index=8,
+      number=9, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='inactivity', full_name='SplitSys_SpeechToText.ConfigSTT.inactivity', index=9,
+      number=10, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -102,7 +116,7 @@ _CONFIGSTT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=37,
-  serialized_end=218,
+  serialized_end=257,
 )
 
 
@@ -139,8 +153,8 @@ _CONFIGRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=220,
-  serialized_end=300,
+  serialized_start=259,
+  serialized_end=339,
 )
 
 
@@ -184,8 +198,8 @@ _SPEECHCHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=302,
-  serialized_end=397,
+  serialized_start=341,
+  serialized_end=436,
 )
 
 
@@ -236,8 +250,8 @@ _TRANSCRIPTCHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=399,
-  serialized_end=487,
+  serialized_start=438,
+  serialized_end=526,
 )
 
 _CONFIGRESULT.fields_by_name['config'].message_type = _CONFIGSTT

@@ -74,7 +74,7 @@ class worker:
 		is_final = False
 		last_transcript = ''
 		last_confidence = -1
-
+		continuous_transcript = [''] # list of multiple is_final sub-transcripts
 		try:
 			service = cloud_speech.beta_create_Speech_stub(
 				self.make_channel('speech.googleapis.com', 443))
@@ -82,6 +82,9 @@ class worker:
 			logger.info("%s: Initialized", self.token)
 			responses = service.StreamingRecognize(self.request_stream(chunkIterator, config),
 						DEADLINE_SECS)
+
+			# putting a timer on responses rather than speech
+			start_time = time.time()
 
 			for response in responses:
 				#  A good sequence of responses from ASR is
@@ -107,7 +110,14 @@ class worker:
 				# END_OF_UTTERANCE = 4
 				# END_OF_AUDIO = 3
 
+				# logger.info(response)
 				# print response, response.endpointer_type
+				curr_time = time.time()
+
+				if (curr_time - start_time) > 60:
+					raise Exception('Streaming timeout')
+
+
 				if response.endpointer_type == 3:
 					self.got_end_audio = True
 
@@ -118,13 +128,17 @@ class worker:
 				if len(response.results) > 0:
 
 					last_transcript = response.results[0].alternatives[0].transcript
+					continuous_transcript[-1] = last_transcript
 
 					if response.results[0].is_final:
-						last_confidence = response.results[0].alternatives[0].confidence
-						break
+						if config['continuous']:
+							continuous_transcript.append('')
+						else:
+							last_confidence = response.results[0].alternatives[0].confidence
+							break
 					else:
-						yield {'transcript': last_transcript,
-							'is_final': False,
+						yield {'transcript': (''.join(continuous_transcript) if config['continuous'] else last_transcript),
+							'is_final': (False if config['continuous'] else response.results[0].is_final),
 							'confidence': -1
 							}
 
@@ -133,7 +147,8 @@ class worker:
 			logger.error('%s: %s connection error', self.token, e)
 
 		finally:
-			yield {'transcript' : last_transcript, 'is_final': True,
+			yield {'transcript' : (''.join(continuous_transcript) if config['continuous'] else last_transcript),
+					'is_final': True,
 					'confidence': last_confidence}
 			logger.info('%s: finished', self.token)
 

@@ -11,7 +11,7 @@ import Queue
 import base64
 import utils
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # WebSocket client
@@ -23,17 +23,20 @@ def get_credentials():
    return creds['credentials']
 
 class ASRClient(WebSocketClient):
-    def __init__(self, url, headers, chunkIterator, responseQueue, contentType):
+    def __init__(self, url, headers, chunkIterator, responseQueue, contentType, config):
         self.chunkIterator = chunkIterator
         self.responseQueue = responseQueue
         self.contentType = contentType
         self.listeningMessages = 0
+        self.config = config
         WebSocketClient.__init__(self, url, headers=headers.items())
         logger.debug("IBM initialized")
 
     def opened(self):
         data = {"action" : "start", "content-type" : str(self.contentType),
-        "continuous" : False, "interim_results" : True, "inactivity_timeout": 10}
+        "continuous" : self.config['continuous'], "interim_results" : True, "inactivity_timeout": 100}
+
+        print data
         data['word_confidence'] = True
         data['timestamps'] = True
         data['max_alternatives'] = 3
@@ -58,7 +61,7 @@ class ASRClient(WebSocketClient):
         logger.debug("Closed down %s %s", code, reason)
         if code != 2000:
             self.responseQueue.put('EOS')
-        # logger.info('IBM fnished')
+        logger.info('IBM fnished')
 
 
     def received_message(self, msg):
@@ -69,6 +72,7 @@ class ASRClient(WebSocketClient):
             self.listeningMessages += 1
             if (self.listeningMessages == 2):
                # close the connection
+                logger.info('closing IBM')
                 self.close(1000)
 
          # if in streaming
@@ -99,9 +103,7 @@ class worker:
     def __init__(self, token):
         self.token = token
 
-
     def stream(self, chunkIterator, config=None):
-
         # parse command line parameters
         contentType = 'audio/l16; rate=16000'
         model = 'en-US_BroadbandModel'
@@ -122,7 +124,7 @@ class worker:
 
         last_transcript = ''
         try:
-            client = ASRClient(url, headers, chunkIterator, responseQueue, contentType)
+            client = ASRClient(url, headers, chunkIterator, responseQueue, contentType, config)
             client.connect()
             logger.info("%s: Initialized", self.token)
             responseIterator =  iter(responseQueue.get, 'EOS')

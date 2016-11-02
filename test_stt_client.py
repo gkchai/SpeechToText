@@ -14,7 +14,7 @@ import pdb
 import uuid
 
 _TIMEOUT_SECONDS = 10
-_TIMEOUT_SECONDS_STREAM = 100 	# timeout for streaming must be for entire stream
+_TIMEOUT_SECONDS_STREAM = 1000 	# timeout for streaming must be for entire stream
 
 class Sender:
 
@@ -30,7 +30,9 @@ class Sender:
 							encoding = self.settings['encoding'],
 							max_alternatives = self.settings['max_alternatives'],
 							interim_results = self.settings['interim_results'],
-							continuous = self.settings['continuous']
+							continuous = self.settings['continuous'],
+							inactivity = self.settings['inactivity'],
+							chunksize = self.settings['chunksize']
 						)
 		configResponse = service.DoConfig(configParams, _TIMEOUT_SECONDS)
 		# we create a random token which is used for streaming

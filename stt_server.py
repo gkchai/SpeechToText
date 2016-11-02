@@ -17,10 +17,14 @@ import thread
 import threading
 import time
 import pymongo
+import webrtcvad
+import collections
 
 import argparse
 import sys
 import logging
+
+FORMAT = '%(levelname)s: %(asctime)s: %(message)s'
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('SpeechToText')
 
@@ -117,14 +121,64 @@ class Listener(stt_pb2.BetaListenerServicer):
 			logger.error("Cannot write to DB")
 
 
-	def _splitStream(self, request_iterator, listQueues):
+	def _splitStream(self, request_iterator, listQueues, config):
 		''' Place the items from the request_iterator into each
 			queue in the list of queues
 		'''
+		frame_len = 10 #10ms or 20ms or 30ms
+		frame_bytes = 32*frame_len #16KHz sampling @ 2Bytes/sample
 
+		# number of frames
+		inactivity_frames = config['inactivity']//frame_len
+
+		vad = webrtcvad.Vad()
+		vad.set_mode(2)
+		ring_buffer = collections.deque(maxlen=inactivity_frames)
+		continuous = config['continuous']
+		triggered = False
+		end_of_speech = False
+
+		prev_content = b''
 		for chunk in request_iterator:
+
+			# we have to use custom VAD otherwise
+			# we let the ASRs use their VAD for non-continuous
+			if continuous:
+
+				# break chunk into 10ms frames
+				curr_content = chunk.content + prev_content
+				n = len(curr_content)
+				offset = 0
+
+				while n >= frame_bytes:
+
+					is_speech = vad.is_speech(curr_content[offset:offset+frame_bytes], 16000)
+					ring_buffer.append(is_speech)
+					n = n - frame_bytes
+					offset += frame_bytes
+				if n > 0:
+					prev_content = curr_content[offset:]
+				else:
+					prev_content = b''
+
+				num_voiced = len([f for f in ring_buffer if f is True])
+				num_unvoiced = len(ring_buffer) - num_voiced
+
+				if not triggered:
+					if num_voiced > 0.9*ring_buffer.maxlen:
+						triggered = True
+				else:
+					if num_unvoiced > 0.9*ring_buffer.maxlen:
+						end_of_speech = True
+
+				if end_of_speech:
+					logger.info('Got end of speech from VAD')
+					break
+
+
 			for Q in listQueues:
 				Q.put(chunk.content)
+
 		for Q in listQueues:
 			Q.put('EOS')
 
@@ -177,7 +231,8 @@ class Listener(stt_pb2.BetaListenerServicer):
 		config['profanity_filter'] = stt_config.profanity_filter
 		config['interim_results'] = stt_config.interim_results
 		config['continuous'] = stt_config.continuous
-
+		config['chunksize'] = stt_config.chunksize
+		config['inactivity'] = stt_config.inactivity
 
 		record = {}
 		record['token'] = token
@@ -191,7 +246,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 		logger.debug('%s: Running speech to text', token)
 
-		thread.start_new_thread(self._splitStream, (request_iterator, all_queues))
+		thread.start_new_thread(self._splitStream, (request_iterator, all_queues, config))
 		thread.start_new_thread(LogStream, (iter(all_queues[-1].get, 'EOS'), token))
 
 		responseQueue = Queue.Queue()
@@ -228,6 +283,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 					#may break the call after just one ASR finishes
 
 				# keep sending transcript to client until *all* ASRs are DONE
+
 				yield stt_pb2.TranscriptChunk(
 					asr = item_json['asr'],
 					transcript = item_json['transcript'],

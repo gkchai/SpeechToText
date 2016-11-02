@@ -21,12 +21,12 @@ def generate_chunks(filename, grpc_on=False, chunkSize=3072):
 					yield chunk
 			else:
 				raise StopIteration
-			time.sleep(0.1)
+			time.sleep(0.1*chunkSize/3072.0)
 
 	#piped stream from terminal
 	elif 'stdin' in filename:
 		while True:
-			chunk = sys.stdin.read(chunkSize//2)
+			chunk = sys.stdin.read(chunkSize)
 			if chunk:
 				# print len(chunk)
 				if grpc_on:
@@ -59,6 +59,6 @@ def generate_chunks(filename, grpc_on=False, chunkSize=3072):
 					yield chunk
 			else:
 				raise StopIteration
-			time.sleep(0.1)
+			time.sleep(0.1*chunkSize/3072.0)
 	else:
 		raise StopIteration

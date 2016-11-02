@@ -18,6 +18,8 @@ message ConfigSTT {
 	bool profanity_filter = 6;
 	bool interim_results = 7;
 	bool continuous = 8;
+	int32 chunksize = 9;
+	int32 inactivity = 10;
 }
 
 // config result
