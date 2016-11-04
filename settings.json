@@ -7,7 +7,7 @@
 	"interim_results": true,
 	"profanity_filter": true,
 	"continuous": true,
-	"inactivity": 2000,
+	"inactivity": 2500,
 	"keywords": [],
 	"chunksize": 3072
 }

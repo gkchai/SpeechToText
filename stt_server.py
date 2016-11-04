@@ -132,7 +132,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 		inactivity_frames = config['inactivity']//frame_len
 
 		vad = webrtcvad.Vad()
-		vad.set_mode(2)
+		vad.set_mode(3)
 		ring_buffer = collections.deque(maxlen=inactivity_frames)
 		continuous = config['continuous']
 		triggered = False
@@ -146,7 +146,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 			if continuous:
 
 				# break chunk into 10ms frames
-				curr_content = chunk.content + prev_content
+				curr_content = prev_content + chunk.content
 				n = len(curr_content)
 				offset = 0
 
@@ -164,9 +164,12 @@ class Listener(stt_pb2.BetaListenerServicer):
 				num_voiced = len([f for f in ring_buffer if f is True])
 				num_unvoiced = len(ring_buffer) - num_voiced
 
+				# logger.info("%d, %d", num_voiced, num_unvoiced)
+
 				if not triggered:
-					if num_voiced > 0.9*ring_buffer.maxlen:
+					if num_voiced > 0.5*ring_buffer.maxlen:
 						triggered = True
+						logger.info('Triggered start of speech')
 				else:
 					if num_unvoiced > 0.9*ring_buffer.maxlen:
 						end_of_speech = True
