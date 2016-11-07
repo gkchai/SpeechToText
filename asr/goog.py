@@ -119,6 +119,7 @@ class worker:
 
 
 				if response.endpointer_type == 3:
+					# logger.info('Got end of audio')
 					self.got_end_audio = True
 
 				if response.error.code != code_pb2.OK:

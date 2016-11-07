@@ -41,23 +41,22 @@ class IterableQueue():
 		self.Q = Q
 		self.endcount = 0
 		self.num_asrs = num_asrs
+		self.predicate = True
 
 	def __iter__(self):
 		return self
 
-	def _predicate(self, x):
-		if x == 'DONE':
+	def _check(self, x):
+		if x['is_final'] == True:
 			self.endcount += 1
-			if self.endcount == self.num_asrs:
-				return False
-			else:
-				return True
-		else:
-			return True
+
+		if self.endcount == self.num_asrs:
+			self.predicate = False
 
 	def next(self):
-		item = self.Q.get()
-		if self._predicate(item):
+		if self.predicate:
+			item = self.Q.get()
+			self._check(item)
 			return item
 		else:
 			raise StopIteration
@@ -123,24 +122,29 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 	def _splitStream(self, request_iterator, listQueues, config):
 		''' Place the items from the request_iterator into each
-			queue in the list of queues
+			queue in the list of queues. Use VAD when continuous
+			mode is activated
 		'''
-		frame_len = 10 #10ms or 20ms or 30ms
-		frame_bytes = 32*frame_len #16KHz sampling @ 2Bytes/sample
-
-		# number of frames
-		inactivity_frames = config['inactivity']//frame_len
-
-		vad = webrtcvad.Vad()
-		vad.set_mode(3)
-		ring_buffer = collections.deque(maxlen=inactivity_frames)
 		continuous = config['continuous']
-		triggered = False
-		end_of_speech = False
 
-		prev_content = b''
+		if continuous:
+			frame_len = 10 #10ms or 20ms or 30ms
+			frame_bytes = 32*frame_len #16KHz sampling @ 2Bytes/sample
+
+			# number of frames
+			inactivity_frames = config['inactivity']//frame_len
+			vad = webrtcvad.Vad()
+			vad.set_mode(3)
+			ring_buffer = collections.deque(maxlen=inactivity_frames)
+			triggered = False
+			end_of_speech = False
+			prev_content = b''
+
+		counter = 0
+
 		for chunk in request_iterator:
 
+			counter += 1
 			# we have to use custom VAD otherwise
 			# we let the ASRs use their VAD for non-continuous
 			if continuous:
@@ -156,6 +160,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 					ring_buffer.append(is_speech)
 					n = n - frame_bytes
 					offset += frame_bytes
+
 				if n > 0:
 					prev_content = curr_content[offset:]
 				else:
@@ -166,6 +171,8 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 				# logger.info("%d, %d", num_voiced, num_unvoiced)
 
+				# TODO: if not triggered for a while then go to end-of-speech
+				# in any case
 				if not triggered:
 					if num_voiced > 0.5*ring_buffer.maxlen:
 						triggered = True
@@ -176,13 +183,17 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 				if end_of_speech:
 					logger.info('Got end of speech from VAD')
-					break
+					for Q in listQueues:
+						# logger.info('adding end of speech')
+						Q.put('EOS')
+					continuous = False
 
 
 			for Q in listQueues:
 				Q.put(chunk.content)
 
 		for Q in listQueues:
+			# logger.info('adding end of speech')
 			Q.put('EOS')
 
 	def _mergeStream(self, asr_response_iterator, responseQueue, asr):
@@ -196,8 +207,8 @@ class Listener(stt_pb2.BetaListenerServicer):
 			toClient_json = {'asr': asr, 'transcript': str_response,
 								'is_final': is_final}
 			responseQueue.put(toClient_json)
-		responseQueue.put('DONE')
-
+		# logger.info('merge thread complete')
+		return
 
 	def DoConfig(self, request, context):
 
@@ -249,52 +260,69 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 		logger.debug('%s: Running speech to text', token)
 
-		thread.start_new_thread(self._splitStream, (request_iterator, all_queues, config))
-		thread.start_new_thread(LogStream, (iter(all_queues[-1].get, 'EOS'), token))
+		thread_ids = []
+
+		t = threading.Thread(target=self._splitStream, args=(request_iterator, all_queues, config))
+		t.start()
+		thread_ids.append(t)
+		t = threading.Thread(target=LogStream, args=(iter(all_queues[-1].get, 'EOS'), token))
+		t.start()
+		thread_ids.append(t)
 
 		responseQueue = Queue.Queue()
 		for ix, asr in enumerate(config['asrs']):
 			if asr == 'google':
 				gw = google.worker(token)
-				thread.start_new_thread(self._mergeStream,
+				t = threading.Thread(target=self._mergeStream, args=
 					(gw.stream(iter(all_queues[ix].get, 'EOS'), config),
 						responseQueue, asr))
+				t.start()
+				thread_ids.append(t)
+
+
 			if asr == 'ibm':
 				ibmw = ibm.worker(token)
-				thread.start_new_thread(self._mergeStream,
+				t = threading.Thread(target=self._mergeStream, args=
 					(ibmw.stream(iter(all_queues[ix].get, 'EOS'), config),
 						responseQueue, asr))
+				t.start()
+				thread_ids.append(t)
+
 			if asr == 'hound':
 				houndw = hound.worker(token)
-				thread.start_new_thread(self._mergeStream,
+				t = threading.Thread(target=self._mergeStream, args=
 					(houndw.stream(iter(all_queues[ix].get, 'EOS'), config),
 						responseQueue, asr))
+				t.start()
+				thread_ids.append(t)
 
+		# keep sending transcript to client until *all* ASRs are DONE
 		for item_json in IterableQueue(responseQueue, len(config['asrs'])):
-			if item_json != 'DONE':
 
-				if item_json['is_final']:
+			# logger.info(item_json)
+			if item_json['is_final']:
 
-					each_record = {}
-					each_record['asr'] = item_json['asr']
-					each_record['transcript'] = item_json['transcript']
-					each_record['is_final'] = item_json['is_final']
-					each_record['confidence'] = 1.0
-					record['results'].append(each_record)
+				each_record = {}
+				each_record['asr'] = item_json['asr']
+				each_record['transcript'] = item_json['transcript']
+				each_record['is_final'] = item_json['is_final']
+				each_record['confidence'] = 1.0
+				record['results'].append(each_record)
 
-					#TODO: write each record to DB separately because the client
-					#may break the call after just one ASR finishes
+				# WE DONOT JOIN
+				# for t in thread_ids:
+				# 	t.join()
 
-				# keep sending transcript to client until *all* ASRs are DONE
+			#TODO: write each record to DB separately because the client
+			#may break the call after just one ASR finishes
 
-				yield stt_pb2.TranscriptChunk(
-					asr = item_json['asr'],
-					transcript = item_json['transcript'],
-					is_final = item_json['is_final'],
-					confidence = 1.0,
-					)
+			yield stt_pb2.TranscriptChunk(
+				asr = item_json['asr'],
+				transcript = item_json['transcript'],
+				is_final = item_json['is_final'],
+				confidence = 1.0,
+				)
 
-		# all asrs are DONE; write record to database
 		try:
 			self._write_to_database(record)
 		except:

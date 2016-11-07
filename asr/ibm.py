@@ -36,7 +36,7 @@ class ASRClient(WebSocketClient):
         data = {"action" : "start", "content-type" : str(self.contentType),
         "continuous" : self.config['continuous'], "interim_results" : True, "inactivity_timeout": 100}
 
-        print data
+        logger.debug(data)
         data['word_confidence'] = True
         data['timestamps'] = True
         data['max_alternatives'] = 3
@@ -52,7 +52,7 @@ class ASRClient(WebSocketClient):
                     logger.debug("Sending to IBM = %d", len(data))
                 self.send(b'', binary=True)
             except:
-                logger.info("Abort sending. Closed called by server")
+                logger.debug("Abort sending. Closed called by server")
 
         t = threading.Thread(target=send_chunk)
         t.start()
@@ -61,7 +61,7 @@ class ASRClient(WebSocketClient):
         logger.debug("Closed down %s %s", code, reason)
         if code != 2000:
             self.responseQueue.put('EOS')
-        logger.info('IBM fnished')
+        logger.debug('IBM fnished')
 
 
     def received_message(self, msg):
@@ -72,7 +72,7 @@ class ASRClient(WebSocketClient):
             self.listeningMessages += 1
             if (self.listeningMessages == 2):
                # close the connection
-                logger.info('closing IBM')
+                logger.debug('closing IBM')
                 self.close(1000)
 
          # if in streaming
@@ -93,7 +93,7 @@ class ASRClient(WebSocketClient):
                 self.responseQueue.put(hypothesis)
                 if bFinal:
                     # print "got final", self.listeningMessages
-                    logger.debug('IBM fnished')
+                    logger.debug('IBM fnished from final hypothesis')
                     self.responseQueue.put('EOS')
                     self.close(2000)
 

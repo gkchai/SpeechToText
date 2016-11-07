@@ -1,5 +1,5 @@
 {
-	"asrs": ["google", "ibm", "hound"],
+	"asrs": ["google", "hound", "ibm"],
 	"language": "en-US",
 	"encoding":"LINEAR16",
 	"sampling_rate":16000,

@@ -81,6 +81,7 @@ class Sender:
 							  'is_final': response.is_final}
 
 	  		# continuously refresh and print
+	  		# print(response_dict)
 			self.printMultiple(response_dict, term)
 
 		print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n')

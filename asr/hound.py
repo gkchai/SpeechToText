@@ -8,7 +8,7 @@ import sys
 import json
 import Queue
 import argparse
-import thread
+import thread, threading
 import utils
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -43,13 +43,13 @@ def request_stream(client, chunkIterator, responseQueue):
     try:
         finished = False
         for data in chunkIterator:
+            # logger.info(len(data))
             if not finished:
                 finished = client.fill(data)
         client.finish()
     except:
         responseQueue.put('EOS')
         return
-
 
 
 class worker:
@@ -71,7 +71,8 @@ class worker:
             responseQueue = Queue.Queue()
             client.start(ResponseListener(responseQueue))
             logger.info("%s: Initialized", self.token)
-            thread.start_new_thread(request_stream, (client, chunkIterator, responseQueue))
+            t = threading.Thread(target=request_stream, args=(client, chunkIterator, responseQueue))
+            t.start()
 
             responseIterator =  iter(responseQueue.get, 'EOS')
             for response in responseIterator:
@@ -84,6 +85,7 @@ class worker:
         finally:
             yield {'transcript' : last_transcript, 'is_final': True, 'confidence': 1}
             logger.info('%s: finished', self.token)
+            t.join()
 
 
 
