@@ -3,7 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# log files 
+# log files
 log/
-audio/
-

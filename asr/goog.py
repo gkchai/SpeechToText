@@ -52,7 +52,12 @@ class worker:
 		recognition_config = cloud_speech.RecognitionConfig(
 			encoding= config['encoding'], sample_rate=config['sampling_rate'],
 			max_alternatives=config['max_alternatives'],
-			language_code = config['language'])
+			language_code = config['language'],
+			speech_context = cloud_speech.SpeechContext(
+				phrases = ['poncho', 'hi poncho', 'trulia', 'cnn', 'uber', 'uberx', 'uber pool',
+							'spotify', 'techcrunch', 'alexa', 'cleverbot']
+				)
+			)
 
 		streaming_config = cloud_speech.StreamingRecognitionConfig(
 			config=recognition_config, interim_results=config['interim_results'],
