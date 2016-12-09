@@ -54,7 +54,7 @@ class worker:
 			max_alternatives=config['max_alternatives'],
 			language_code = config['language'],
 			speech_context = cloud_speech.SpeechContext(
-				phrases = ['poncho', 'hi poncho', 'trulia', 'cnn', 'uber', 'uberx', 'uber pool',
+				phrases = ['pandorabot', 'pandora bot', 'poncho', 'hi poncho', 'trulia', 'cnn', 'uber', 'uberx', 'uber pool',
 							'spotify', 'techcrunch', 'alexa', 'cleverbot']
 				)
 			)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 	config = {
 	"language": "en-US",
 	"encoding":"LINEAR16",
-	"rate":16000,
+	"sampling_rate":16000,
 	"max_alternatives":5,
 	"interim_results": True,
 	"profanity_filter": True,

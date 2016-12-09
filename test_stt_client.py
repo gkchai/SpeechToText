@@ -1,4 +1,4 @@
-"""Test ASR client implementation in GRPC"""
+"""Test STT client implementation in GRPC"""
 
 from __future__ import print_function
 import asr.utils as utils
@@ -17,7 +17,6 @@ _TIMEOUT_SECONDS = 10
 _TIMEOUT_SECONDS_STREAM = 1000 	# timeout for streaming must be for entire stream
 
 class Sender:
-
 	def __init__(self, settings):
 		self.settings = settings
 
@@ -43,7 +42,6 @@ class Sender:
 
 		rows_pos = [3, 7, 11]
 		row_pos = rows_pos[self.settings['asrs'].index(response_dict['asr'])]
-		# print (response_dict['str'])
 
 		with term.location(0, row_pos):
 			print (term.clear_eol) # clear till eol first
@@ -63,7 +61,6 @@ class Sender:
 			yield stt_pb2.SpeechChunk(token=token, config=config)
 			for item in utils.generate_chunks(filename, grpc_on=True, chunkSize=chunkSize):
 				yield item
-
 
 		responses = service.DoSpeechToText(request_stream(), _TIMEOUT_SECONDS_STREAM)
 
@@ -87,17 +84,19 @@ class Sender:
 		print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 
 
-	def createService(self, port):
-		channel = implementations.insecure_channel('localhost', port) # local
-		# channel = implementations.insecure_channel('10.37.163.202', port) # lenovo server
-		# channel = implementations.insecure_channel('52.91.17.237', port) # aws
+	def createService(self, ipaddr, port):
+		channel = implementations.insecure_channel(ipaddr, port)
 		return stt_pb2.beta_create_Listener_stub(channel)
 
 
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Client to test the STT service')
-	parser.add_argument('-in', action='store', dest='filename', default='audio/test1.raw', help='audio file')
+	parser.add_argument('-in', action='store', dest='filename', default='audio/whatistheweatherthere.wav',
+		help='audio file')
+	parser.add_argument('-a', action='store', dest='ipaddr',
+        default='localhost', #aws: 52.91.17.237, lenovo: 10.37.163.202
+        help='IP address of server. Default localhost.')
 	parser.add_argument('-p', action='store', type=int, dest='port', default=9080, help='port')
 	args = parser.parse_args()
 
@@ -105,6 +104,6 @@ if __name__ == '__main__':
 		settings = json.load(f)
 
 	senderObj = Sender(settings)
-	service = senderObj.createService(args.port)
+	service = senderObj.createService(args.ipaddr, args.port)
 	streamingconfig, token = senderObj.configService(service)
 	senderObj.clientChunkStream(service, args.filename, token, streamingconfig, 3072)

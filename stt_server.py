@@ -28,6 +28,7 @@ FORMAT = '%(levelname)s: %(asctime)s: %(message)s'
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('SpeechToText')
 
+
 _SUPPORTED_ASRS = ["google", "hound", "ibm"]
 _LOG_PATH = 'log/'
 _LOG_FILE = 'log/log.json'
@@ -36,7 +37,6 @@ class IterableQueue():
 	''' An iterator over queue data structure that
 		stops when the predicate is false
 	'''
-
 	def __init__(self, Q, num_asrs):
 		self.Q = Q
 		self.endcount = 0
@@ -122,8 +122,10 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 	def _splitStream(self, request_iterator, listQueues, config):
 		''' Place the items from the request_iterator into each
-			queue in the list of queues. Use VAD when continuous
-			mode is activated
+			queue in the list of queues. When using VAD (continuous
+			= True), the end-of-speech (EOS) can occur when the
+			stream ends or inactivity is detected, whichever occurs
+			first.
 		'''
 		continuous = config['continuous']
 
@@ -155,7 +157,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 				offset = 0
 
 				while n >= frame_bytes:
-
+					# webrtc takes chunks of only 10ms/20ms/30ms. We use 16KHz@10ms.
 					is_speech = vad.is_speech(curr_content[offset:offset+frame_bytes], 16000)
 					ring_buffer.append(is_speech)
 					n = n - frame_bytes
@@ -166,6 +168,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 				else:
 					prev_content = b''
 
+				# number of voiced and unvoiced segments
 				num_voiced = len([f for f in ring_buffer if f is True])
 				num_unvoiced = len(ring_buffer) - num_voiced
 
@@ -197,7 +200,7 @@ class Listener(stt_pb2.BetaListenerServicer):
 			Q.put('EOS')
 
 	def _mergeStream(self, asr_response_iterator, responseQueue, asr):
-		''' Place the item from the response_iterator of asr into a common
+		''' Place the item from the asr_response_iterator of asr into a common
 			queue called responseQueue
 		'''
 
@@ -226,6 +229,10 @@ class Listener(stt_pb2.BetaListenerServicer):
 			config=request)
 
 	def DoSpeechToText(self, request_iterator, context):
+		'''Main rpc function for converting speech to text
+		   Takes in a stream of stt_pb2 SpeechChunk messages
+		   and returns a stream of stt_pb2 Transcript messages
+		'''
 
 		# first item in iterator has the config and token
 		first_item = next(request_iterator)
@@ -279,7 +286,6 @@ class Listener(stt_pb2.BetaListenerServicer):
 				t.start()
 				thread_ids.append(t)
 
-
 			if asr == 'ibm':
 				ibmw = ibm.worker(token)
 				t = threading.Thread(target=self._mergeStream, args=
@@ -315,7 +321,6 @@ class Listener(stt_pb2.BetaListenerServicer):
 
 			#TODO: write each record to DB separately because the client
 			#may break the call after just one ASR finishes
-
 			yield stt_pb2.TranscriptChunk(
 				asr = item_json['asr'],
 				transcript = item_json['transcript'],

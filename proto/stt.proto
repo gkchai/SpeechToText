@@ -44,4 +44,3 @@ message TranscriptChunk {
 	bool is_final = 3;
 	float confidence = 4;
 }
-
