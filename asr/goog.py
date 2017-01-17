@@ -55,7 +55,7 @@ class worker:
 			language_code = config['language'],
 			speech_context = cloud_speech.SpeechContext(
 				phrases = ['pandorabot', 'pandora bot', 'poncho', 'hi poncho', 'trulia', 'cnn', 'uber', 'uberx', 'uber pool',
-							'spotify', 'techcrunch', 'alexa', 'cleverbot', 'DND', 'mute', 'whenever']
+							'spotify', 'techcrunch', 'alexa', 'cleverbot', 'DND', 'mute', 'whenever', 'unmute', 'PC', 'disturb']
 				)
 			)
 
