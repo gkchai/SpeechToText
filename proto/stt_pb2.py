@@ -17,9 +17,9 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='stt.proto',
-  package='SplitSys_SpeechToText',
+  package='SpeechToText',
   syntax='proto3',
-  serialized_pb=_b('\n\tstt.proto\x12\x15SplitSys_SpeechToText\"\xdc\x01\n\tConfigSTT\x12\x0c\n\x04\x61srs\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x15\n\rsampling_rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\x12\x11\n\tchunksize\x18\t \x01(\x05\x12\x12\n\ninactivity\x18\n \x01(\x05\"P\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x30\n\x06\x63onfig\x18\x02 \x01(\x0b\x32 .SplitSys_SpeechToText.ConfigSTT\"_\n\x0bSpeechChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\x12\r\n\x05token\x18\x02 \x01(\t\x12\x30\n\x06\x63onfig\x18\x03 \x01(\x0b\x32 .SplitSys_SpeechToText.ConfigSTT\"X\n\x0fTranscriptChunk\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\xc3\x01\n\x08Listener\x12S\n\x08\x44oConfig\x12 .SplitSys_SpeechToText.ConfigSTT\x1a#.SplitSys_SpeechToText.ConfigResult\"\x00\x12\x62\n\x0e\x44oSpeechToText\x12\".SplitSys_SpeechToText.SpeechChunk\x1a&.SplitSys_SpeechToText.TranscriptChunk\"\x00(\x01\x30\x01\x62\x06proto3')
+  serialized_pb=_b('\n\tstt.proto\x12\x0cSpeechToText\"\xdc\x01\n\tConfigSTT\x12\x0c\n\x04\x61srs\x18\x01 \x03(\t\x12\x10\n\x08\x65ncoding\x18\x02 \x01(\t\x12\x15\n\rsampling_rate\x18\x03 \x01(\x05\x12\x10\n\x08language\x18\x04 \x01(\t\x12\x18\n\x10max_alternatives\x18\x05 \x01(\x05\x12\x18\n\x10profanity_filter\x18\x06 \x01(\x08\x12\x17\n\x0finterim_results\x18\x07 \x01(\x08\x12\x12\n\ncontinuous\x18\x08 \x01(\x08\x12\x11\n\tchunksize\x18\t \x01(\x05\x12\x12\n\ninactivity\x18\n \x01(\x05\"G\n\x0c\x43onfigResult\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\'\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.SpeechToText.ConfigSTT\"V\n\x0bSpeechChunk\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\x0c\x12\r\n\x05token\x18\x02 \x01(\t\x12\'\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x17.SpeechToText.ConfigSTT\"X\n\x0fTranscriptChunk\x12\x0b\n\x03\x61sr\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x12\x12\n\nconfidence\x18\x04 \x01(\x02\x32\x9f\x01\n\x08Listener\x12\x41\n\x08\x44oConfig\x12\x17.SpeechToText.ConfigSTT\x1a\x1a.SpeechToText.ConfigResult\"\x00\x12P\n\x0e\x44oSpeechToText\x12\x19.SpeechToText.SpeechChunk\x1a\x1d.SpeechToText.TranscriptChunk\"\x00(\x01\x30\x01\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -28,76 +28,76 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _CONFIGSTT = _descriptor.Descriptor(
   name='ConfigSTT',
-  full_name='SplitSys_SpeechToText.ConfigSTT',
+  full_name='SpeechToText.ConfigSTT',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='asrs', full_name='SplitSys_SpeechToText.ConfigSTT.asrs', index=0,
+      name='asrs', full_name='SpeechToText.ConfigSTT.asrs', index=0,
       number=1, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='encoding', full_name='SplitSys_SpeechToText.ConfigSTT.encoding', index=1,
+      name='encoding', full_name='SpeechToText.ConfigSTT.encoding', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='sampling_rate', full_name='SplitSys_SpeechToText.ConfigSTT.sampling_rate', index=2,
+      name='sampling_rate', full_name='SpeechToText.ConfigSTT.sampling_rate', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='language', full_name='SplitSys_SpeechToText.ConfigSTT.language', index=3,
+      name='language', full_name='SpeechToText.ConfigSTT.language', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='max_alternatives', full_name='SplitSys_SpeechToText.ConfigSTT.max_alternatives', index=4,
+      name='max_alternatives', full_name='SpeechToText.ConfigSTT.max_alternatives', index=4,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='profanity_filter', full_name='SplitSys_SpeechToText.ConfigSTT.profanity_filter', index=5,
+      name='profanity_filter', full_name='SpeechToText.ConfigSTT.profanity_filter', index=5,
       number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='interim_results', full_name='SplitSys_SpeechToText.ConfigSTT.interim_results', index=6,
+      name='interim_results', full_name='SpeechToText.ConfigSTT.interim_results', index=6,
       number=7, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='continuous', full_name='SplitSys_SpeechToText.ConfigSTT.continuous', index=7,
+      name='continuous', full_name='SpeechToText.ConfigSTT.continuous', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='chunksize', full_name='SplitSys_SpeechToText.ConfigSTT.chunksize', index=8,
+      name='chunksize', full_name='SpeechToText.ConfigSTT.chunksize', index=8,
       number=9, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='inactivity', full_name='SplitSys_SpeechToText.ConfigSTT.inactivity', index=9,
+      name='inactivity', full_name='SpeechToText.ConfigSTT.inactivity', index=9,
       number=10, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -115,27 +115,27 @@ _CONFIGSTT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=37,
-  serialized_end=257,
+  serialized_start=28,
+  serialized_end=248,
 )
 
 
 _CONFIGRESULT = _descriptor.Descriptor(
   name='ConfigResult',
-  full_name='SplitSys_SpeechToText.ConfigResult',
+  full_name='SpeechToText.ConfigResult',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='status', full_name='SplitSys_SpeechToText.ConfigResult.status', index=0,
+      name='status', full_name='SpeechToText.ConfigResult.status', index=0,
       number=1, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='config', full_name='SplitSys_SpeechToText.ConfigResult.config', index=1,
+      name='config', full_name='SpeechToText.ConfigResult.config', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -153,34 +153,34 @@ _CONFIGRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=259,
-  serialized_end=339,
+  serialized_start=250,
+  serialized_end=321,
 )
 
 
 _SPEECHCHUNK = _descriptor.Descriptor(
   name='SpeechChunk',
-  full_name='SplitSys_SpeechToText.SpeechChunk',
+  full_name='SpeechToText.SpeechChunk',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='content', full_name='SplitSys_SpeechToText.SpeechChunk.content', index=0,
+      name='content', full_name='SpeechToText.SpeechChunk.content', index=0,
       number=1, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='token', full_name='SplitSys_SpeechToText.SpeechChunk.token', index=1,
+      name='token', full_name='SpeechToText.SpeechChunk.token', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='config', full_name='SplitSys_SpeechToText.SpeechChunk.config', index=2,
+      name='config', full_name='SpeechToText.SpeechChunk.config', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -198,41 +198,41 @@ _SPEECHCHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=341,
-  serialized_end=436,
+  serialized_start=323,
+  serialized_end=409,
 )
 
 
 _TRANSCRIPTCHUNK = _descriptor.Descriptor(
   name='TranscriptChunk',
-  full_name='SplitSys_SpeechToText.TranscriptChunk',
+  full_name='SpeechToText.TranscriptChunk',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='asr', full_name='SplitSys_SpeechToText.TranscriptChunk.asr', index=0,
+      name='asr', full_name='SpeechToText.TranscriptChunk.asr', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='transcript', full_name='SplitSys_SpeechToText.TranscriptChunk.transcript', index=1,
+      name='transcript', full_name='SpeechToText.TranscriptChunk.transcript', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='is_final', full_name='SplitSys_SpeechToText.TranscriptChunk.is_final', index=2,
+      name='is_final', full_name='SpeechToText.TranscriptChunk.is_final', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='confidence', full_name='SplitSys_SpeechToText.TranscriptChunk.confidence', index=3,
+      name='confidence', full_name='SpeechToText.TranscriptChunk.confidence', index=3,
       number=4, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -250,8 +250,8 @@ _TRANSCRIPTCHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=438,
-  serialized_end=526,
+  serialized_start=411,
+  serialized_end=499,
 )
 
 _CONFIGRESULT.fields_by_name['config'].message_type = _CONFIGSTT
@@ -264,28 +264,28 @@ DESCRIPTOR.message_types_by_name['TranscriptChunk'] = _TRANSCRIPTCHUNK
 ConfigSTT = _reflection.GeneratedProtocolMessageType('ConfigSTT', (_message.Message,), dict(
   DESCRIPTOR = _CONFIGSTT,
   __module__ = 'stt_pb2'
-  # @@protoc_insertion_point(class_scope:SplitSys_SpeechToText.ConfigSTT)
+  # @@protoc_insertion_point(class_scope:SpeechToText.ConfigSTT)
   ))
 _sym_db.RegisterMessage(ConfigSTT)
 
 ConfigResult = _reflection.GeneratedProtocolMessageType('ConfigResult', (_message.Message,), dict(
   DESCRIPTOR = _CONFIGRESULT,
   __module__ = 'stt_pb2'
-  # @@protoc_insertion_point(class_scope:SplitSys_SpeechToText.ConfigResult)
+  # @@protoc_insertion_point(class_scope:SpeechToText.ConfigResult)
   ))
 _sym_db.RegisterMessage(ConfigResult)
 
 SpeechChunk = _reflection.GeneratedProtocolMessageType('SpeechChunk', (_message.Message,), dict(
   DESCRIPTOR = _SPEECHCHUNK,
   __module__ = 'stt_pb2'
-  # @@protoc_insertion_point(class_scope:SplitSys_SpeechToText.SpeechChunk)
+  # @@protoc_insertion_point(class_scope:SpeechToText.SpeechChunk)
   ))
 _sym_db.RegisterMessage(SpeechChunk)
 
 TranscriptChunk = _reflection.GeneratedProtocolMessageType('TranscriptChunk', (_message.Message,), dict(
   DESCRIPTOR = _TRANSCRIPTCHUNK,
   __module__ = 'stt_pb2'
-  # @@protoc_insertion_point(class_scope:SplitSys_SpeechToText.TranscriptChunk)
+  # @@protoc_insertion_point(class_scope:SpeechToText.TranscriptChunk)
   ))
 _sym_db.RegisterMessage(TranscriptChunk)
 
@@ -308,12 +308,12 @@ class ListenerStub(object):
       channel: A grpc.Channel.
     """
     self.DoConfig = channel.unary_unary(
-        '/SplitSys_SpeechToText.Listener/DoConfig',
+        '/SpeechToText.Listener/DoConfig',
         request_serializer=ConfigSTT.SerializeToString,
         response_deserializer=ConfigResult.FromString,
         )
     self.DoSpeechToText = channel.stream_stream(
-        '/SplitSys_SpeechToText.Listener/DoSpeechToText',
+        '/SpeechToText.Listener/DoSpeechToText',
         request_serializer=SpeechChunk.SerializeToString,
         response_deserializer=TranscriptChunk.FromString,
         )
@@ -348,7 +348,7 @@ def add_ListenerServicer_to_server(servicer, server):
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'SplitSys_SpeechToText.Listener', rpc_method_handlers)
+      'SpeechToText.Listener', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -373,16 +373,16 @@ class BetaListenerStub(object):
 
 def beta_create_Listener_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
   request_deserializers = {
-    ('SplitSys_SpeechToText.Listener', 'DoConfig'): ConfigSTT.FromString,
-    ('SplitSys_SpeechToText.Listener', 'DoSpeechToText'): SpeechChunk.FromString,
+    ('SpeechToText.Listener', 'DoConfig'): ConfigSTT.FromString,
+    ('SpeechToText.Listener', 'DoSpeechToText'): SpeechChunk.FromString,
   }
   response_serializers = {
-    ('SplitSys_SpeechToText.Listener', 'DoConfig'): ConfigResult.SerializeToString,
-    ('SplitSys_SpeechToText.Listener', 'DoSpeechToText'): TranscriptChunk.SerializeToString,
+    ('SpeechToText.Listener', 'DoConfig'): ConfigResult.SerializeToString,
+    ('SpeechToText.Listener', 'DoSpeechToText'): TranscriptChunk.SerializeToString,
   }
   method_implementations = {
-    ('SplitSys_SpeechToText.Listener', 'DoConfig'): face_utilities.unary_unary_inline(servicer.DoConfig),
-    ('SplitSys_SpeechToText.Listener', 'DoSpeechToText'): face_utilities.stream_stream_inline(servicer.DoSpeechToText),
+    ('SpeechToText.Listener', 'DoConfig'): face_utilities.unary_unary_inline(servicer.DoConfig),
+    ('SpeechToText.Listener', 'DoSpeechToText'): face_utilities.stream_stream_inline(servicer.DoSpeechToText),
   }
   server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
   return beta_implementations.server(method_implementations, options=server_options)
@@ -390,17 +390,17 @@ def beta_create_Listener_server(servicer, pool=None, pool_size=None, default_tim
 
 def beta_create_Listener_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
   request_serializers = {
-    ('SplitSys_SpeechToText.Listener', 'DoConfig'): ConfigSTT.SerializeToString,
-    ('SplitSys_SpeechToText.Listener', 'DoSpeechToText'): SpeechChunk.SerializeToString,
+    ('SpeechToText.Listener', 'DoConfig'): ConfigSTT.SerializeToString,
+    ('SpeechToText.Listener', 'DoSpeechToText'): SpeechChunk.SerializeToString,
   }
   response_deserializers = {
-    ('SplitSys_SpeechToText.Listener', 'DoConfig'): ConfigResult.FromString,
-    ('SplitSys_SpeechToText.Listener', 'DoSpeechToText'): TranscriptChunk.FromString,
+    ('SpeechToText.Listener', 'DoConfig'): ConfigResult.FromString,
+    ('SpeechToText.Listener', 'DoSpeechToText'): TranscriptChunk.FromString,
   }
   cardinalities = {
     'DoConfig': cardinality.Cardinality.UNARY_UNARY,
     'DoSpeechToText': cardinality.Cardinality.STREAM_STREAM,
   }
   stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-  return beta_implementations.dynamic_stub(channel, 'SplitSys_SpeechToText.Listener', cardinalities, options=stub_options)
+  return beta_implementations.dynamic_stub(channel, 'SpeechToText.Listener', cardinalities, options=stub_options)
 # @@protoc_insertion_point(module_scope)

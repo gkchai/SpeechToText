@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package SplitSys_SpeechToText;
+package SpeechToText;
 
 // The Listener service definition.
 service Listener {
