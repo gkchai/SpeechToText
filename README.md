@@ -21,17 +21,19 @@ bash generate_pb.sh
 
 ## Credentials
 
-### Google ASR
+#### Google ASR
 Download the service account key for [Google Cloud Speech](https://cloud.google.com/speech/)
-and move it to `asr/google_key.json`. Run the following command in the terminal
-to set the Google ASR credential path
-```export GOOGLE_APPLICATION_CREDENTIALS=asr/google_key.json```
+and move it to `asr/google_key.json`. Run the following command in the terminal to
+set the Google ASR credential path
+```
+export GOOGLE_APPLICATION_CREDENTIALS=asr/google_key.json
+```
 
-### Hound ASR
+#### Hound ASR
 Add clientID and ClientKey for [Hound STT](https://www.houndify.com/) under
 `asr/hound_key.json`
 
-### Hound ASR
+#### IBM ASR
 Add credentials for [IBM Bluemix STT](https://www.ibm.com/watson/services/speech-to-text/)
 under `asr/ibm_key.json`
 
@@ -45,7 +47,9 @@ Create `log` folder and `log/log.json` file with empty (`{}`) json contents.
 
 ## Start server
 Start the server on a given port. Running on ports below 1024 requires root privileges.
-```python stt_server.py -p 9080```
+```
+python stt_server.py -p 9080
+```
 
 # Proxy Client
 
@@ -53,14 +57,18 @@ Start the server on a given port. Running on ports below 1024 requires root priv
 Edit `settings.json` to specify the ASR settings.
 
 ## Stream from recorded file
-```python test_stt_client.py -p 9080 -in audio/whatistheweatherthere.wav```
+```
+python test_stt_client.py -p 9080 -in audio/whatistheweatherthere.wav
+```
 
 ## Stream from microphone (MAC OS)
-Assumes rec and sox are installed. Available at http://sox.sourceforge.net/
-`rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_stt_client.py -p 9080 -in stdin`
+Requires [sox](http://sox.sourceforge.net/).
+```
+rec -p -q | sox - -c 1 -r 16000 -t s16 -q -L - | python test_stt_client.py -p 9080 -in stdin
+```
 
 ## Long running speech
-Set ```continuous: true``` and ```chunksize: 3072``` (byte size of audio chunk)
+Set `continuous: true` and `chunksize: 3072` (byte size of audio chunk)
 in settings.json for continuous long running speech (capped at ~1min). WebRTC
 VAD is utilized for silence detection.
 
