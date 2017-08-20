@@ -5,3 +5,9 @@ __pycache__/
 
 # log files
 log/
+
+#pycharm
+.idea
+
+#sublime
+.DS_Store

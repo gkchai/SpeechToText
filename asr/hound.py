@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# author: kcgarikipati@gmail.com
 
 """ Interface for Hound Speech to Text ASR"""
 

@@ -6,7 +6,7 @@
 	"max_alternatives":5,
 	"interim_results": true,
 	"profanity_filter": true,
-	"continuous": true,
+	"continuous": false,
 	"inactivity": 2500,
 	"keywords": [],
 	"chunksize": 3072

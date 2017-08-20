@@ -1,3 +1,6 @@
+# author: kcgarikipati@gmail.com
+
+
 """ Interface for Google Cloud Speech ASR"""
 
 from google.cloud import speech as cloud_speech
@@ -12,14 +15,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 # Audio recording parameters
 RATE = 16000
-CHANNELS = 1
 
-# Keep the request alive for this many seconds
-DEADLINE_SECS = 8 * 60 * 60
-# DEADLINE_SECS = 10
 
 class worker:
 
@@ -54,14 +52,6 @@ class worker:
 				sample_rate_hertz=config['sampling_rate'],
 				max_alternatives=config['max_alternatives'],
 				language_code=config['language'],
-				# speech_contexts=cloud_speech.SpeechContext(
-				# 	phrases=[ 'open paint',
-				# 			'pandorabot', 'pandora bot', 'poncho', 'hi poncho', 'trulia', 'cnn', 'uber', 'uberx',
-				# 			 'uber pool',
-				# 			 'spotify', 'techcrunch', 'alexa', 'cleverbot', 'DND', 'mute', 'whenever', 'unmute', 'PC',
-				# 			 'disturb',
-				# 			 'exit', 'OneNote', '2016', 'printer', 'default', 'HomePrinter']
-				# )
 			)
 
 			streaming_config = types.StreamingRecognitionConfig(
@@ -131,7 +121,7 @@ if __name__ == "__main__":
 	config = {
 	"language": "en-US",
 	"encoding":"LINEAR16",
-	"sampling_rate":16000,
+	"sampling_rate":RATE,
 	"max_alternatives":5,
 	"interim_results": True,
 	"profanity_filter": True,

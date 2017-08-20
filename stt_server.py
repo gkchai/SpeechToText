@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+# author: kcgarikipati@gmail.com
+
 """STT server implementation in GRPC"""
 
 from proto import stt_pb2
@@ -16,7 +17,6 @@ import sys
 import thread
 import threading
 import time
-import pymongo
 import webrtcvad
 import collections
 
@@ -78,40 +78,26 @@ class Listener(stt_pb2.BetaListenerServicer):
 		self.db_type = None
 		self.db = {}
 
-		# see if we can connect to mongoDB
+		# see if log/ can be used as a database
 		try:
-			client = pymongo.MongoClient(serverSelectionTimeoutMS=2)
-			client.server_info()
-			self.db = client.SplitSys
-			self.db_type = 'mongodb'
-			logger.info('Selecting mongoDB database')
-		except pymongo.errors.ServerSelectionTimeoutError as err:
-			logger.error(err)
-
-			# see if log/ can be used as a database
+			f = open(_LOG_FILE)
 			try:
-				f = open(_LOG_FILE)
-				try:
-					self.db = json.load(f)
-					self.db_type = 'log'
-					logger.info('Selecting log database')
-				except ValueError as e:
-					logger.error("'" + _LOG_FILE + "' is not a valid JSON file.")
-				finally:
-					f.close()
+				self.db = json.load(f)
+				self.db_type = 'log'
+				logger.info('Selecting log database')
+			except ValueError as e:
+				logger.error("'" + _LOG_FILE + "' is not a valid JSON file.")
+			finally:
+				f.close()
 
-			except EnvironmentError as e:
-				logger.error('Cannot establish database connection')
+		except EnvironmentError as e:
+			logger.error('Cannot establish database connection')
 
 		logger.info('STT server initialized')
 
 	def _write_to_database(self, record):
 
-		if self.db_type == 'mongodb':
-			# insert entire dictionary into mongoDB
-			self.db.stt.insert(record)
-
-		elif self.db_type == 'log':
+		if self.db_type == 'log':
 			# add record to the dictionary
 			self.db.update({record['token']: record})
 			with open(_LOG_FILE, 'w') as f:

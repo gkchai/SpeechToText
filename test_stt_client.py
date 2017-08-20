@@ -1,3 +1,5 @@
+# author: kcgarikipati@gmail.com
+
 """Test STT client implementation in GRPC"""
 
 from __future__ import print_function
@@ -95,7 +97,7 @@ if __name__ == '__main__':
 	parser.add_argument('-in', action='store', dest='filename', default='audio/whatistheweatherthere.wav',
 		help='audio file')
 	parser.add_argument('-a', action='store', dest='ipaddr',
-        default='localhost', #aws: 52.91.17.237, lenovo: 10.37.163.202
+        default='localhost',
         help='IP address of server. Default localhost.')
 	parser.add_argument('-p', action='store', type=int, dest='port', default=9080, help='port')
 	args = parser.parse_args()
