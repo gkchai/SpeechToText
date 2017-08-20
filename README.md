@@ -6,12 +6,16 @@ detection (VAD) with tunable activity threshold.
 
 # Install dependicies
 Preferred way is to do in virtualenv (Python 2.7).
-```pip install --upgrade pip```
-```pip install -r requirements.txt```
+```
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 # Compile .proto
-```cd proto```
-```bash generate_pb.sh```
+```
+cd proto
+bash generate_pb.sh
+```
 
 # Proxy server
 
@@ -82,11 +86,13 @@ what is the weather there ***
 
 ## Response format
 Return type to the client  is a stream of JSON responses like:
-```{
+```
+{
 	"asr": "google",
 	"transcript": "what is the weather there"
 	"is_final": False
-  }```
+  }
+```
 
 ## Testing
 Individual ASR blocks (XXX = goog, ibm, hound) can be tsted locally as follows.
